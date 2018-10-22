@@ -10,16 +10,16 @@ typedef enum {
 } aes_modes_t;
 
 typedef enum {
-    AES_128_BIT = 128,
-    AES_192_BIT = 192,
-    AES_256_BIT = 256
+    AES_128_BIT = 16,
+    AES_192_BIT = 24,
+    AES_256_BIT = 32
 } aes_key_size_t;
 
 typedef struct {
     aes_modes_t aes_mode;
-    uint8_t key_length;
+    aes_key_size_t key_size;
     void* key;
 } aes_params_t;
 
-aes_params_t* init_aes_params(uint8_t key_size, void* key);
+aes_params_t* init_aes_params(aes_key_size_t key_size, void* key);
 #endif
