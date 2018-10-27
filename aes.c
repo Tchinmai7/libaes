@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "aes.h"
+//TODO: @Sandhya: Replace this with the derivation
 uint8_t sbox[16][16] =  {
  {0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76},
  {0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0},
@@ -23,25 +24,42 @@ uint8_t sbox[16][16] =  {
 
 #define Nb 4
 #define Nr 10
-uint8_t* SubWord() 
+void SubWord(uint8_t* input) 
 {
-    return NULL;
+    uint8_t temp[4];
+    printf("SubWord: ");
+    for (int i = 0; i < 4; i++) {
+        uint8_t val = input[i];
+        // Split the byte value into nibbles 
+        uint8_t low = val & 0x0F;
+        uint8_t high = (val & 0xF0) >> 4;
+        temp[i] = sbox[high][low];
+        printf("%02x", temp[i]);
+    }
+    printf("\n");
+    memcpy(input, temp, 4);
 }
 
-uint8_t* RotWord() 
+void RotWord(uint8_t* input) 
 {
-    return NULL;
+    uint8_t temp[4] = {0x00};
+    temp[0] = input[1];
+    temp[1] = input[2];
+    temp[2] = input[3];
+    temp[3] = input[0];
+    printf("RotWord: %02x%02x%02x%02x\n", temp[0], temp[1], temp[2], temp[3]);
+    memcpy(input, temp, 4);
 }
 
-uint8_t* Xor(uint8_t* v1, uint8_t val)
+void Xor(uint8_t* input, uint8_t* val)
 {
-    return NULL;
+    input[0] = input[0] ^ val[0];
+    input[1] = input[1] ^ val[1];
+    input[2] = input[2] ^ val[2];
+    input[3] = input[3] ^ val[3];
+    printf("Xor: %02x%02x%02x%02x\n", input[0], input[1], input[2], input[3]);
 }
 
-uint8_t* XorArray(uint8_t* v1, uint8_t* v2) 
-{
-    return NULL;
-}
 // TODO: @Mahati: Replace this with the derivation 
 static const uint8_t Rcon[11] = { 0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36 };
 
@@ -50,6 +68,7 @@ void expand_key(uint8_t key[16], uint8_t Nk, uint8_t* w)
 {
     uint8_t i = 0;
     uint8_t temp[4] = {0x00};
+    uint8_t rcon_key[4] = {0x00};
     while ( i < Nk ) {
         memcpy(w + (4 * i), key + (4 * i), 4);
         i++;
@@ -58,12 +77,15 @@ void expand_key(uint8_t key[16], uint8_t Nk, uint8_t* w)
     while (i < Nb * (Nr + 1)) {
             memcpy(temp, (w + i - 1),4);
             if (i % Nk == 0) { 
-                memcpy(temp, Xor(SubWord(RotWord(temp)), Rcon[i/Nk]), 4); 
+                RotWord(temp);
+                SubWord(temp);
+                rcon_key[0] = Rcon[i/Nk];
+                Xor(temp, rcon_key);
             }
             else if ((Nk > 6) &&  (i % Nk == 4)) {
-                memcpy(temp, SubWord(temp), 4);
+                SubWord(temp);
             }
-            memcpy(w+i, XorArray(w+i-Nk, temp), 4);
+            //memcpy(w+i, Xor(w+i-Nk, temp), 4);
             i = i + 1;
     }
 }
