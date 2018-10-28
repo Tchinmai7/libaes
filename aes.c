@@ -171,6 +171,42 @@ void sub_bytes(uint8_t (*in)[4])
     }
     dump_matrix(in);
 }
+
+void shift_rows(uint8_t (*in)[4]) 
+{
+    printf("Shift Rows:\n");
+    // Doing this lazily now. Might have to cleanup later
+    uint8_t temp = 0x00;
+    temp = in[1][0];
+    in[1][0] = in[1][1];
+    in[1][1] = in[1][2];
+    in[1][2] = in[1][3];
+    in[1][3] = temp;
+
+    // Swap [2][0] and [2][2]
+    temp = in[2][0];
+    in[2][0] = in[2][2];
+    in[2][2] = temp;
+
+    // Swap [2][1] and [2][3]
+    temp = in[2][1];
+    in[2][1] = in[2][3];
+    in[2][3] = temp;
+
+    temp = in[3][0];
+    in[3][0] = in[3][3];
+    in[3][3] = in[3][2]; 
+    in[3][2] = in[3][1];
+    in[3][1] = temp;
+
+    dump_matrix(in);
+}
+
+void mix_columns(uint8_t (*in)[4]) 
+{
+    printf("Mix Columns:\n");
+    dump_matrix(in);
+}
 /*
 Cipher(byte in[4*Nb], byte out[4*Nb], word w[Nb*(Nr+1)])
 begin
@@ -210,7 +246,8 @@ void cipher(uint8_t* in, uint8_t* out, uint8_t* w)
   //  int Nr = getNr(4);
 //    for (int round = 1; round < Nr; round++) {
           sub_bytes(state);
-//        ShiftRows(state);
+          shift_rows(state);
+          mix_columns(state);
 //        MixColumns(state);
 //        AddRoundKey(state, w[round*Nb, (round+1)*Nb-1]);
  //   }
