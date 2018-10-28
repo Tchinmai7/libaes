@@ -27,5 +27,5 @@ void RotWord(uint8_t* input);
 void Xor(uint8_t* input, uint8_t* val);
 int getNr(int Nk);
 void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w);
-void cipher(uint8_t* in, uint8_t* out, uint8_t* w);
+void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk);
 #endif
