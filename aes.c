@@ -213,6 +213,8 @@ void shift_rows(uint8_t (*in)[4])
 
     dump_matrix(in);
 }
+
+// TODO: TARUN: Change this to something else
 uint8_t multiply_by_two(uint8_t val)
 {
   return ((val<<1) ^ (((val>>7) & 1) * 0x1b));
