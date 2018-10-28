@@ -25,4 +25,5 @@ aes_params_t* init_aes_params(aes_key_size_t key_size, void* key);
 void SubWord(uint8_t* input);
 void RotWord(uint8_t* input);
 void Xor(uint8_t* input, uint8_t* val);
+void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w);
 #endif

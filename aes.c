@@ -23,7 +23,6 @@ uint8_t sbox[16][16] =  {
 };
 
 #define Nb 4
-#define Nr 10
 void SubWord(uint8_t* input) 
 {
     uint8_t temp[4];
@@ -36,7 +35,7 @@ void SubWord(uint8_t* input)
         temp[i] = sbox[high][low];
         printf("%02x", temp[i]);
     }
-    printf("\n");
+    printf("\t");
     memcpy(input, temp, 4);
 }
 
@@ -47,7 +46,7 @@ void RotWord(uint8_t* input)
     temp[1] = input[2];
     temp[2] = input[3];
     temp[3] = input[0];
-    printf("RotWord: %02x%02x%02x%02x\n", temp[0], temp[1], temp[2], temp[3]);
+    printf("RotWord: %02x%02x%02x%02x\t", temp[0], temp[1], temp[2], temp[3]);
     memcpy(input, temp, 4);
 }
 
@@ -57,25 +56,61 @@ void Xor(uint8_t* input, uint8_t* val)
     input[1] = input[1] ^ val[1];
     input[2] = input[2] ^ val[2];
     input[3] = input[3] ^ val[3];
-    printf("Xor: %02x%02x%02x%02x\n", input[0], input[1], input[2], input[3]);
+    printf("Xor: %02x%02x%02x%02x\t", input[0], input[1], input[2], input[3]);
+}
+void XorWithReturn(uint8_t* input, uint8_t* val, uint8_t* ret)
+{
+    ret[0] = input[0] ^ val[0];
+    ret[1] = input[1] ^ val[1];
+    ret[2] = input[2] ^ val[2];
+    ret[3] = input[3] ^ val[3];
+    printf("Xor with Return: %02x%02x%02x%02x\n", ret[0], ret[1], ret[2], ret[3]);
+}
+int getNr(int Nk)
+{
+    if (Nk == 4) 
+    {
+        return 10;
+    }
+    else if (Nk == 6)
+    {
+        return 12;
+    }
+    else if (Nk == 8)
+    {
+        return 14;
+    }
+    return -1;
 }
 
 // TODO: @Mahati: Replace this with the derivation 
 static const uint8_t Rcon[11] = { 0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36 };
 
-// Implemented only for 16byte  - 128 bit keys
-void expand_key(uint8_t key[16], uint8_t Nk, uint8_t* w)
+void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
 {
     uint8_t i = 0;
     uint8_t temp[4] = {0x00};
     uint8_t rcon_key[4] = {0x00};
-    while ( i < Nk ) {
-        memcpy(w + (4 * i), key + (4 * i), 4);
-        i++;
+    int Nk_bytes = Nk * 4;
+    int Nr = getNr(Nk);
+    if (Nr < 0 ) {
+        printf("Fatal Error., invalid keysize\n");
+        return;
+    }
+    while ( i <  4 * Nk ) {
+        temp [0] = key[i];
+        temp [1] = key[i + 1];
+        temp [2] = key[i + 2];
+        temp [3] = key[i + 3];
+        printf("W: %02x%02x%02x%02x\n", temp[0], temp[1], temp[2], temp[3]);
+        memcpy(w + i , temp, 4);
+        i += 4;
     }
     i = Nk;
     while (i < Nb * (Nr + 1)) {
-            memcpy(temp, (w + i - 1),4);
+            int j = i * 4;
+            memcpy(temp, w + j - 4 ,4);
+            printf("I: %d, Temp: %02x%02x%02x%02x\t",i,  temp[0], temp[1], temp[2], temp[3]);
             if (i % Nk == 0) { 
                 RotWord(temp);
                 SubWord(temp);
@@ -85,7 +120,9 @@ void expand_key(uint8_t key[16], uint8_t Nk, uint8_t* w)
             else if ((Nk > 6) &&  (i % Nk == 4)) {
                 SubWord(temp);
             }
-            //memcpy(w+i, Xor(w+i-Nk, temp), 4);
+            printf("W[i-Nk]: %02x%02x%02x%02x\n", *(w + j - Nk_bytes), *(w + j - Nk_bytes + 1), *(w + j - Nk_bytes + 2), *(w + j - Nk_bytes + 3));
+            XorWithReturn(w + j - Nk_bytes , temp, w + j);
             i = i + 1;
+            printf("\n");
     }
 }
