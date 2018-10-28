@@ -205,6 +205,17 @@ void shift_rows(uint8_t (*in)[4])
 void mix_columns(uint8_t (*in)[4]) 
 {
     printf("Mix Columns:\n");
+    uint8_t old_col[4] = {0x00};
+    for (int i = 0; i < 4; i++) {
+        old_col[0] = in[0][i];
+        old_col[1] = in[1][i];
+        old_col[2] = in[2][i];
+        old_col[3] = in[3][i];
+        in[0][i] = (0x02 * old_col[0]) ^ (0x03 * old_col[1]) ^ old_col[2] ^ old_col[3];
+        in[1][i] = old_col[0] ^ ( 0x02 * old_col[1]) ^ (0x03 * old_col[2]) ^ old_col[3];
+        in[2][i] = old_col[0] ^ old_col[1] ^ (0x02 * old_col[2]) ^ ( 0x03 * old_col[3]);
+        in[3][i] = (0x03 * old_col[0]) ^ old_col[1] ^ old_col[2] ^ ( 0x02 * old_col[3]);
+    }
     dump_matrix(in);
 }
 /*
@@ -248,7 +259,6 @@ void cipher(uint8_t* in, uint8_t* out, uint8_t* w)
           sub_bytes(state);
           shift_rows(state);
           mix_columns(state);
-//        MixColumns(state);
 //        AddRoundKey(state, w[round*Nb, (round+1)*Nb-1]);
  //   }
 }
