@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "aes.h"
+#include "inv_aes.h"
 
 void print_word(uint8_t* word, int len) 
 {
@@ -30,6 +31,11 @@ int main(int argc, char* argv[])
     printf("Encrypted: \t");
     print_word(output, 16);
 
+    uint8_t plain[16] = {0x00};
+    inv_cipher(output, plain, word_128, 4);
+    printf("Decrypted: \t");
+    print_word(plain, 16);
+/*
 
     uint8_t key_192_bit[24] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17 };
     Nr = getNr(6);
@@ -59,5 +65,6 @@ int main(int argc, char* argv[])
     printf("Encrypted: \t");
     cipher(input, output, word_256, 8);
     print_word(output, 16);
+    */
     return 0;
 }

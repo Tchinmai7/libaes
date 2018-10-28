@@ -28,4 +28,10 @@ void Xor(uint8_t* input, uint8_t* val);
 int getNr(int Nk);
 void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w);
 void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk);
+
+// Move these to a different header maybe?
+void add_round_key(uint8_t (*in)[4], uint8_t (*w)[4]);
+void convert_to_matrix(uint8_t* in, uint8_t (*out)[4]);
+void convert_to_array(uint8_t(*in)[4], uint8_t* out);
+void dump_matrix(uint8_t inp[4][4]);
 #endif
