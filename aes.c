@@ -130,6 +130,16 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
     }
 }
 
+void dump_matrix(uint8_t inp[4][4]) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            printf("%02x\t", inp[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
 void add_round_key(uint8_t (*in)[4], uint8_t (*w)[4]) 
 {
     for (int i = 0; i < 4; i++) {
@@ -137,7 +147,8 @@ void add_round_key(uint8_t (*in)[4], uint8_t (*w)[4])
             in[i][j] = in[i][j] ^ w[i][j];    
         }
     }
-    
+    printf("Add Round Key:\n");
+    dump_matrix(in);
 }
 
 void convert_to_matrix(uint8_t* in, uint8_t (*out)[4])
@@ -151,14 +162,15 @@ void convert_to_matrix(uint8_t* in, uint8_t (*out)[4])
     }   
 }
 
-void dump_matrix(uint8_t inp[4][4]) {
+void convert_to_array(uint8_t(*in)[4], uint8_t* out)
+{
+    int k = 0;
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
-            printf("%02x\t", inp[i][j]);
+            out[k] = in[j][i];
+            k++;
         }
-        printf("\n");
-    }
-    printf("\n");
+    }   
 }
 
 void sub_bytes(uint8_t (*in)[4]) 
@@ -255,14 +267,20 @@ void cipher(uint8_t* in, uint8_t* out, uint8_t* w)
     dump_matrix(roundKey);
     
     add_round_key(state, roundKey);
-    printf("Add Round Key:\n");
-    dump_matrix(state);
     
-  //  int Nr = getNr(4);
-//    for (int round = 1; round < Nr; round++) {
-          sub_bytes(state);
-          shift_rows(state);
-          mix_columns(state);
-//        AddRoundKey(state, w[round*Nb, (round+1)*Nb-1]);
- //   }
+    int Nr = getNr(4);
+    for (int round = 1; round < Nr; round++) {
+        sub_bytes(state);
+        shift_rows(state);
+        mix_columns(state);
+        memcpy(temp, w + (round * 4 * 4), 16);
+        convert_to_matrix(temp, roundKey);
+        add_round_key(state, roundKey);
+    }
+    sub_bytes(state);
+    shift_rows(state);
+    memcpy(temp, w + (Nr * 4 * 4), 16);
+    convert_to_matrix(temp, roundKey);
+    add_round_key(state, roundKey);
+    convert_to_array(state, out);
 }
