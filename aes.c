@@ -29,15 +29,22 @@ uint8_t get_sbox_value(uint8_t val)
     uint8_t high = (val & 0xF0) >> 4;
     return sbox[high][low];
 }
+
 void SubWord(uint8_t* input) 
 {
     uint8_t temp[4];
-//    printf("SubWord: ");
+#ifdef DEBUG_KEYS
+    printf("SubWord: ");
+#endif
     for (int i = 0; i < 4; i++) {
         temp[i] = get_sbox_value(input[i]);
-//        printf("%02x", temp[i]);
+#ifdef DEBUG_KEYS
+        printf("%02x", temp[i]);
+#endif
     }
-//    printf("\t");
+#ifdef DEBUG_KEYS
+    printf("\t");
+#endif
     memcpy(input, temp, 4);
 }
 
@@ -48,7 +55,11 @@ void RotWord(uint8_t* input)
     temp[1] = input[2];
     temp[2] = input[3];
     temp[3] = input[0];
-//    printf("RotWord: %02x%02x%02x%02x\t", temp[0], temp[1], temp[2], temp[3]);
+
+#ifdef DEBUG_KEYS
+    printf("RotWord: %02x%02x%02x%02x\t", temp[0], temp[1], temp[2], temp[3]);
+#endif
+
     memcpy(input, temp, 4);
 }
 
@@ -58,7 +69,10 @@ void Xor(uint8_t* input, uint8_t* val)
     input[1] = input[1] ^ val[1];
     input[2] = input[2] ^ val[2];
     input[3] = input[3] ^ val[3];
-//    printf("Xor: %02x%02x%02x%02x\t", input[0], input[1], input[2], input[3]);
+
+#ifdef DEBUG_KEYS
+    printf("Xor: %02x%02x%02x%02x\t", input[0], input[1], input[2], input[3]);
+#endif
 }
 void XorWithReturn(uint8_t* input, uint8_t* val, uint8_t* ret)
 {
@@ -66,7 +80,10 @@ void XorWithReturn(uint8_t* input, uint8_t* val, uint8_t* ret)
     ret[1] = input[1] ^ val[1];
     ret[2] = input[2] ^ val[2];
     ret[3] = input[3] ^ val[3];
-//    printf("Xor with Return: %02x%02x%02x%02x\n", ret[0], ret[1], ret[2], ret[3]);
+
+#ifdef DEBUG_KEYS
+    printf("Xor with Return: %02x%02x%02x%02x\n", ret[0], ret[1], ret[2], ret[3]);
+#endif
 }
 
 int getNr(int Nk)
@@ -105,7 +122,11 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
         temp [1] = key[i + 1];
         temp [2] = key[i + 2];
         temp [3] = key[i + 3];
- //       printf("W: %02x%02x%02x%02x\n", temp[0], temp[1], temp[2], temp[3]);
+
+#ifdef DEBUG_KEYS
+        printf("W: %02x%02x%02x%02x\n", temp[0], temp[1], temp[2], temp[3]);
+#endif
+
         memcpy(w + i , temp, 4);
         i += 4;
     }
@@ -113,7 +134,11 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
     while (i < Nb * (Nr + 1)) {
             int j = i * 4;
             memcpy(temp, w + j - 4 ,4);
- //           printf("I: %d, Temp: %02x%02x%02x%02x\t",i,  temp[0], temp[1], temp[2], temp[3]);
+
+#ifdef DEBUG_KEYS
+            printf("I: %d, Temp: %02x%02x%02x%02x\t",i,  temp[0], temp[1], temp[2], temp[3]);
+#endif
+
             if (i % Nk == 0) { 
                 RotWord(temp);
                 SubWord(temp);
@@ -123,10 +148,17 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
             else if ((Nk > 6) &&  (i % Nk == 4)) {
                 SubWord(temp);
             }
-//            printf("W[i-Nk]: %02x%02x%02x%02x\n", *(w + j - Nk_bytes), *(w + j - Nk_bytes + 1), *(w + j - Nk_bytes + 2), *(w + j - Nk_bytes + 3));
+
+#ifdef DEBUG_KEYS
+            printf("W[i-Nk]: %02x%02x%02x%02x\n", *(w + j - Nk_bytes), *(w + j - Nk_bytes + 1), *(w + j - Nk_bytes + 2), *(w + j - Nk_bytes + 3));
+#endif
+
             XorWithReturn(w + j - Nk_bytes , temp, w + j);
             i = i + 1;
-//            printf("\n");
+
+#ifdef DEBUG_KEYS
+            printf("\n");
+#endif
     }
 }
 
@@ -147,8 +179,11 @@ void add_round_key(uint8_t (*in)[4], uint8_t (*w)[4])
             in[i][j] = in[i][j] ^ w[i][j];    
         }
     }
+
+#ifdef DEBUG_CIPHER
     printf("Add Round Key:\n");
     dump_matrix(in);
+#endif
 }
 
 void convert_to_matrix(uint8_t* in, uint8_t (*out)[4])
@@ -175,18 +210,20 @@ void convert_to_array(uint8_t(*in)[4], uint8_t* out)
 
 void sub_bytes(uint8_t (*in)[4]) 
 {
-    printf("Sub Bytes:\n");
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             in[i][j] = get_sbox_value(in[i][j]);
         }
     }
+
+#ifdef DEBUG_CIPHER
+    printf("Sub Bytes:\n");
     dump_matrix(in);
+#endif
 }
 
 void shift_rows(uint8_t (*in)[4]) 
 {
-    printf("Shift Rows:\n");
     // Doing this lazily now. Might have to cleanup later
     uint8_t temp = 0x00;
     temp = in[1][0];
@@ -211,7 +248,10 @@ void shift_rows(uint8_t (*in)[4])
     in[3][2] = in[3][1];
     in[3][1] = temp;
 
+#ifdef DEBUG_CIPHER
+    printf("Shift Rows:\n");
     dump_matrix(in);
+#endif
 }
 
 // TODO: TARUN: Change this to something else
@@ -222,7 +262,6 @@ uint8_t multiply_by_two(uint8_t val)
 
 void mix_columns(uint8_t (*in)[4]) 
 {
-    printf("Mix Columns:\n");
     uint8_t old_col[4] = {0x00};
     for (int i = 0; i < 4; i++) {
         old_col[0] = in[0][i];
@@ -234,7 +273,11 @@ void mix_columns(uint8_t (*in)[4])
         in[2][i] = old_col[0] ^ old_col[1] ^ multiply_by_two(old_col[2]) ^ (multiply_by_two(old_col[3]) ^ old_col[3]);
         in[3][i] = (multiply_by_two(old_col[0]) ^ old_col[0]) ^ old_col[1] ^ old_col[2] ^ multiply_by_two(old_col[3]);
     }
+
+#ifdef DEBUG_CIPHER
+    printf("Mix Columns:\n");
     dump_matrix(in);
+#endif
 }
 
 void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
@@ -244,19 +287,28 @@ void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
     memcpy(temp, w, 16);
     uint8_t roundKey[4][4] = {0x00};
     convert_to_matrix(in, state);
+
+#ifdef DEBUG_CIPHER
     printf("State Matrix:\n");
     dump_matrix(state);
-    
+#endif
+
     convert_to_matrix(temp, roundKey);
+
+#ifdef DEBUG_CIPHER
     printf("Round Key:\n");
     dump_matrix(roundKey);
+#endif
     
     add_round_key(state, roundKey);
     
     int Nr = getNr(Nk);
     int round = 1;
+
     for (round = 1; round < Nr; round++) {
+#ifdef DEBUG_CIPHER
         printf("Starting Round:[%d]\n", round);
+#endif
         sub_bytes(state);
         shift_rows(state);
         mix_columns(state);
@@ -264,7 +316,11 @@ void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
         convert_to_matrix(temp, roundKey);
         add_round_key(state, roundKey);
     }
+
+#ifdef DEBUG_CIPHER
     printf("Starting Round:[%d]\n", round);
+#endif
+
     sub_bytes(state);
     shift_rows(state);
     memcpy(temp, w + (Nr * 4 * 4), 16);
