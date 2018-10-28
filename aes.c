@@ -201,6 +201,10 @@ void shift_rows(uint8_t (*in)[4])
 
     dump_matrix(in);
 }
+uint8_t multiply_by_two(uint8_t val)
+{
+  return ((val<<1) ^ (((val>>7) & 1) * 0x1b));
+}
 
 void mix_columns(uint8_t (*in)[4]) 
 {
@@ -211,10 +215,10 @@ void mix_columns(uint8_t (*in)[4])
         old_col[1] = in[1][i];
         old_col[2] = in[2][i];
         old_col[3] = in[3][i];
-        in[0][i] = (0x02 * old_col[0]) ^ (0x03 * old_col[1]) ^ old_col[2] ^ old_col[3];
-        in[1][i] = old_col[0] ^ ( 0x02 * old_col[1]) ^ (0x03 * old_col[2]) ^ old_col[3];
-        in[2][i] = old_col[0] ^ old_col[1] ^ (0x02 * old_col[2]) ^ ( 0x03 * old_col[3]);
-        in[3][i] = (0x03 * old_col[0]) ^ old_col[1] ^ old_col[2] ^ ( 0x02 * old_col[3]);
+        in[0][i] = (multiply_by_two(old_col[0])) ^ (multiply_by_two(old_col[1]) ^ old_col[1]) ^ old_col[2] ^ old_col[3];
+        in[1][i] = old_col[0] ^ multiply_by_two(old_col[1]) ^ (multiply_by_two(old_col[2]) ^ old_col[2]) ^ old_col[3];
+        in[2][i] = old_col[0] ^ old_col[1] ^ multiply_by_two(old_col[2]) ^ (multiply_by_two(old_col[3]) ^ old_col[3]);
+        in[3][i] = (multiply_by_two(old_col[0]) ^ old_col[0]) ^ old_col[1] ^ old_col[2] ^ multiply_by_two(old_col[3]);
     }
     dump_matrix(in);
 }
