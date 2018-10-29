@@ -103,8 +103,24 @@ int getNr(int Nk)
     return -1;
 }
 
-// TODO: @Mahati: Replace this with the derivation 
-static const uint8_t Rcon[11] = { 0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36 };
+// Formula derived from https://en.wikipedia.org/wiki/Rijndael_key_schedule
+// Returns Round Constant given any index. 
+uint8_t getRcon(int idx)
+{
+    uint8_t rc[11] = {0x00};
+    for (int r = 1; r <= idx;  r++) 
+    {
+        if (r == 0) {
+            rc[r] = 0x8d;
+        }
+        else if (r == 1) {
+            rc[r] = 0x01;
+        } else {
+            rc[r] = multiply_by_two(rc[r-1]);
+        }
+    }
+    return rc[idx];
+}
 
 void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
 {
@@ -142,7 +158,7 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
             if (i % Nk == 0) { 
                 rot_word(temp);
                 sub_word(temp);
-                rcon_key[0] = Rcon[i/Nk];
+                rcon_key[0] = getRcon(i/Nk);
                 xor(temp, rcon_key);
             }
             else if ((Nk > 6) &&  (i % Nk == 4)) {
