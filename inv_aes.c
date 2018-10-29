@@ -77,40 +77,25 @@ void inv_shift_rows(uint8_t (*in)[4])
 uint8_t multiply_by_09(uint8_t val)
 {
     //x×9=(((x×2)×2)×2)+x
-    uint8_t twox = multiply_by_two(val);
-    uint8_t twoxintotwo = multiply_by_two(twox);
-    uint8_t twoxintotwointotwo = multiply_by_two(twoxintotwo); 
-    return twoxintotwointotwo ^ val;
+    return (multiply_by_two(multiply_by_two(multiply_by_two(val))) ^ val);
 }
 
 uint8_t multiply_by_0b(uint8_t val)
 {
     //x×11=((((x×2)×2)+x)×2)+x
-    uint8_t twox = multiply_by_two(val);
-    uint8_t twoxintotwo = multiply_by_two(twox);
-    uint8_t twoxintotwoplusx = twoxintotwo ^ val;
-    uint8_t twoxintotwoplusxintotwo = multiply_by_two(twoxintotwoplusx);
-    return twoxintotwoplusxintotwo ^ val;
+    return (multiply_by_two(multiply_by_two(multiply_by_two(val)) ^ val) ^ val);
 }
 
 uint8_t multiply_by_0d(uint8_t val)
 {
     //x×13=((((x×2)+x)×2)×2)+x
-    uint8_t twox = multiply_by_two(val);
-    uint8_t twoxplusx = twox ^ val;
-    uint8_t twoxplusxintotwo = multiply_by_two(twoxplusx);
-    uint8_t twoxplusxintotwointotwo = multiply_by_two(twoxplusxintotwo);
-    return twoxplusxintotwointotwo ^ val;
+    return (multiply_by_two(multiply_by_two(multiply_by_two(val) ^ val)) ^ val);
 }
 
 uint8_t multiply_by_0e(uint8_t val)
 {
     //x×14=((((x×2)+x)×2)+x)×2
-    uint8_t twox = multiply_by_two(val);
-    uint8_t twoxplusx = twox ^ val;
-    uint8_t twoxplusx2 = multiply_by_two(twoxplusx);
-    uint8_t twoxplusx2plusx = twoxplusx2 ^ val;
-    return multiply_by_two(twoxplusx2plusx);
+    return multiply_by_two((multiply_by_two(multiply_by_two(val) ^ val) ^ val));
 }
 
 void inv_mix_columns(uint8_t (*in)[4])
