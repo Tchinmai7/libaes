@@ -77,27 +77,41 @@ void inv_shift_rows(uint8_t (*in)[4])
 uint8_t multiply_by_09(uint8_t val)
 {
     //x×9=(((x×2)×2)×2)+x
-    return (multiply_by_two(multiply_by_two(multiply_by_two(val))) ^ val);
+    uint8_t twox = multiply_by_two(val);
+    uint8_t twoxintotwo = multiply_by_two(twox);
+    uint8_t twoxintotwointotwo = multiply_by_two(twoxintotwo); 
+    return twoxintotwointotwo ^ val;
 }
 
 uint8_t multiply_by_0b(uint8_t val)
 {
     //x×11=((((x×2)×2)+x)×2)+x
-    return (multiply_by_two(multiply_by_two(multiply_by_two(val)) ^ val) ^ val);
+    uint8_t twox = multiply_by_two(val);
+    uint8_t twoxintotwo = multiply_by_two(twox);
+    uint8_t twoxintotwoplusx = twoxintotwo ^ val;
+    uint8_t twoxintotwoplusxintotwo = multiply_by_two(twoxintotwoplusx);
+    return twoxintotwoplusxintotwo ^ val;
 }
 
 uint8_t multiply_by_0d(uint8_t val)
 {
     //x×13=((((x×2)+x)×2)×2)+x
-    return multiply_by_two(multiply_by_two(multiply_by_two(val) ^ val)) ^ val;
+    uint8_t twox = multiply_by_two(val);
+    uint8_t twoxplusx = twox ^ val;
+    uint8_t twoxplusxintotwo = multiply_by_two(twoxplusx);
+    uint8_t twoxplusxintotwointotwo = multiply_by_two(twoxplusxintotwo);
+    return twoxplusxintotwointotwo ^ val;
 }
 
 uint8_t multiply_by_0e(uint8_t val)
 {
     //x×14=((((x×2)+x)×2)+x)×2
-    uint8_t prod = multiply_by_two(multiply_by_two(multiply_by_two(multiply_by_two(val) ^ val) ^ val));
-    printf("0x0e * %02x is %05x\n", val, prod);
-    return prod;
+    uint8_t twox = multiply_by_two(val);
+    uint8_t twoxplusx = twox ^ val;
+    uint8_t twoxplusx2 = multiply_by_two(twoxplusx);
+    uint8_t twoxplusx2plusx = twoxplusx2 ^ val;
+    //uint8_t prod = multiply_by_two(multiply_by_two(multiply_by_two(multiply_by_two(val) ^ val) ^ val));
+    return multiply_by_two(twoxplusx2plusx);
 }
 
 void inv_mix_columns(uint8_t (*in)[4])
@@ -143,9 +157,10 @@ void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
     add_round_key(state, roundKey);
 
     int round;
-    for (round = Nr - 1; round > 1; round--) {
+    int n = 1;
+    for (round = Nr - 1; round >= 1; round--) {
 //#ifdef INV_DEBUG_CIPHER
-        printf("Starting Round:[%d]\n", round);
+        printf("Starting Round:[%d]\n", n);
 //#endif
         inv_shift_rows(state);
         inv_sub_bytes(state);
@@ -153,11 +168,10 @@ void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
         convert_to_matrix(temp, roundKey);
         add_round_key(state, roundKey);
         inv_mix_columns(state); 
-        break;
+        n ++;
     }
-    /*
 //#ifdef IN_DEBUG_CIPHER
-    printf("Starting Round:[%d]\n", round);
+    printf("Starting Round:[%d]\n", n);
 //#endif
     inv_shift_rows(state);
     inv_sub_bytes(state);
@@ -165,5 +179,4 @@ void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
     convert_to_matrix(temp, roundKey);
     add_round_key(state, roundKey);
     convert_to_array(state, out);
-    */
 }
