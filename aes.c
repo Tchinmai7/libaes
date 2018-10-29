@@ -197,10 +197,10 @@ void add_round_key(uint8_t (*in)[4], uint8_t (*w)[4])
         }
     }
 
-//#ifdef DEBUG_CIPHER
+#ifdef DEBUG_CIPHER
     printf("Add Round Key:\n");
     dump_matrix(in);
-//#endif
+#endif
 }
 
 void convert_to_matrix(uint8_t* in, uint8_t (*out)[4])
@@ -320,6 +320,7 @@ void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
     add_round_key(state, roundKey);
     
     int Nr = getNr(Nk);
+    //TODO: handle negative
     int round = 1;
 
     for (round = 1; round < Nr; round++) {

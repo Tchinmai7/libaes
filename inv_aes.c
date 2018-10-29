@@ -36,10 +36,10 @@ void inv_sub_bytes(uint8_t (*in)[4])
         }
     }
 
-//#ifdef DEBUG_INV_CIPHER
+#ifdef DEBUG_INV_CIPHER
     printf("INV Sub Bytes:\n");
     dump_matrix(in);
-//#endif
+#endif
 }
 
 void inv_shift_rows(uint8_t (*in)[4]) 
@@ -67,10 +67,10 @@ void inv_shift_rows(uint8_t (*in)[4])
     in[3][2]= in[3][3];
     in[3][3]= temp;
 
-//#ifdef DEBUG_INV_CIPHER
+#ifdef DEBUG_INV_CIPHER
     printf("INV Shift Rows:\n");
     dump_matrix(in);
-//#endif
+#endif
 
 }
 
@@ -110,7 +110,6 @@ uint8_t multiply_by_0e(uint8_t val)
     uint8_t twoxplusx = twox ^ val;
     uint8_t twoxplusx2 = multiply_by_two(twoxplusx);
     uint8_t twoxplusx2plusx = twoxplusx2 ^ val;
-    //uint8_t prod = multiply_by_two(multiply_by_two(multiply_by_two(multiply_by_two(val) ^ val) ^ val));
     return multiply_by_two(twoxplusx2plusx);
 }
 
@@ -133,10 +132,10 @@ void inv_mix_columns(uint8_t (*in)[4])
         in[3][i] = multiply_by_0b(old_col[0]) ^ multiply_by_0d(old_col[1]) ^ multiply_by_09(old_col[2]) ^ multiply_by_0e(old_col[3]);
     }
 
-//#ifdef DEBUG_INV_CIPHER
+#ifdef DEBUG_INV_CIPHER
     printf("INV Mix Columns:\n");
     dump_matrix(in);
-//#endif
+#endif
 }
 
 void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
@@ -144,24 +143,30 @@ void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
     uint8_t state[4][4] = {0x00};
     uint8_t temp[16] = {0x00}; 
     convert_to_matrix(in, state);
+
+#ifdef DEBUG_INV_CIPHER
     printf("The state is \n");
     dump_matrix(state);
-    
+#endif
+
     int Nr = getNr(Nk);
     memcpy(temp, w + (Nr * 4 * 4), 16);
     uint8_t roundKey[4][4] = {0x00};
     convert_to_matrix(temp, roundKey);
     
+#ifdef DEBUG_INV_CIPHER
     printf("The round Key is\n");
     dump_matrix(roundKey);
+#endif
+    
     add_round_key(state, roundKey);
 
     int round;
     int n = 1;
     for (round = Nr - 1; round >= 1; round--) {
-//#ifdef INV_DEBUG_CIPHER
+#ifdef DEBUG_INV_CIPHER
         printf("Starting Round:[%d]\n", n);
-//#endif
+#endif
         inv_shift_rows(state);
         inv_sub_bytes(state);
         memcpy(temp, w + (round * 4 * 4), 16);
@@ -170,9 +175,9 @@ void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
         inv_mix_columns(state); 
         n ++;
     }
-//#ifdef IN_DEBUG_CIPHER
+#ifdef DEBUG_INV_CIPHER
     printf("Starting Round:[%d]\n", n);
-//#endif
+#endif
     inv_shift_rows(state);
     inv_sub_bytes(state);
     memcpy(temp, w, 16);
