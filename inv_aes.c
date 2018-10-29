@@ -44,6 +44,29 @@ void inv_sub_bytes(uint8_t (*in)[4])
 
 void inv_shift_rows(uint8_t (*in)[4]) 
 {
+    uint8_t temp = {0x00};
+    temp = in[1][0];
+    in[1][0] = in[1][3];
+    in[1][3] = in[1][2];
+    in[1][2] = in[1][1];
+    in[1][1] = temp;
+
+    //Swap 2,0  and 2,2
+    temp = in[2][0];
+    in[2][0] = in[2][2];
+    in[2][2] = temp;
+    
+    //swap 2,1 and 2,3
+    temp = in[2][1];
+    in[2][1] = in[2][3];
+    in[2][3] = temp;
+
+    temp = in[3][0];
+    in[3][0]= in[3][1];
+    in[3][1]= in[3][2];
+    in[3][2]= in[3][3];
+    in[3][3]= temp;
+
 //#ifdef DEBUG_INV_CIPHER
     printf("INV Shift Rows:\n");
     dump_matrix(in);
@@ -51,14 +74,55 @@ void inv_shift_rows(uint8_t (*in)[4])
 
 }
 
+uint8_t multiply_by_09(uint8_t val)
+{
+    //x×9=(((x×2)×2)×2)+x
+    return (multiply_by_two(multiply_by_two(multiply_by_two(val))) ^ val);
+}
+
+uint8_t multiply_by_0b(uint8_t val)
+{
+    //x×11=((((x×2)×2)+x)×2)+x
+    return (multiply_by_two(multiply_by_two(multiply_by_two(val)) ^ val) ^ val);
+}
+
+uint8_t multiply_by_0d(uint8_t val)
+{
+    //x×13=((((x×2)+x)×2)×2)+x
+    return multiply_by_two(multiply_by_two(multiply_by_two(val) ^ val)) ^ val;
+}
+
+uint8_t multiply_by_0e(uint8_t val)
+{
+    //x×14=((((x×2)+x)×2)+x)×2
+    uint8_t prod = multiply_by_two(multiply_by_two(multiply_by_two(multiply_by_two(val) ^ val) ^ val));
+    printf("0x0e * %02x is %05x\n", val, prod);
+    return prod;
+}
+
 void inv_mix_columns(uint8_t (*in)[4])
 {
+    uint8_t old_col[4] = {0x00};
+    for (int i = 0; i < 4; i++) {
+        old_col[0] = in[0][i];
+        old_col[1] = in[1][i];
+        old_col[2] = in[2][i];
+        old_col[3] = in[3][i];
+        // this going to be implemented as a series of multiply by two followed by an xor with rest of the values;
+        // newC1 = (0x0e * c1) ^ (0x0b * c2) ^ (0x0d * c3) ^ (0x09 * c4);
+        in[0][i] = multiply_by_0e(old_col[0]) ^ multiply_by_0b(old_col[1]) ^ multiply_by_0d(old_col[2]) ^ multiply_by_09(old_col[3]);
+        // newC2 = (0x09 * c1) ^ (0x0e * c2) ^ (0x0b * c3) ^ (0x0d * c4);
+        in[1][i] = multiply_by_09(old_col[0]) ^ multiply_by_0e(old_col[1]) ^ multiply_by_0b(old_col[2]) ^ multiply_by_0d(old_col[3]);
+        // newC3 = (0x0d * c1) ^ (0x09 * c2) ^ (0x0e * c3) ^ (0x0b * c4);
+        in[2][i] = multiply_by_0d(old_col[0]) ^ multiply_by_09(old_col[1]) ^ multiply_by_0e(old_col[2]) ^ multiply_by_0b(old_col[3]);
+        // newC4 = (0x0b * c1) ^ (0x0d * c2) ^ (0x09 * c3) ^ (0x0e * c4);
+        in[3][i] = multiply_by_0b(old_col[0]) ^ multiply_by_0d(old_col[1]) ^ multiply_by_09(old_col[2]) ^ multiply_by_0e(old_col[3]);
+    }
 
 //#ifdef DEBUG_INV_CIPHER
     printf("INV Mix Columns:\n");
     dump_matrix(in);
 //#endif
-
 }
 
 void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
@@ -89,7 +153,9 @@ void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
         convert_to_matrix(temp, roundKey);
         add_round_key(state, roundKey);
         inv_mix_columns(state); 
+        break;
     }
+    /*
 //#ifdef IN_DEBUG_CIPHER
     printf("Starting Round:[%d]\n", round);
 //#endif
@@ -99,4 +165,5 @@ void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
     convert_to_matrix(temp, roundKey);
     add_round_key(state, roundKey);
     convert_to_array(state, out);
+    */
 }

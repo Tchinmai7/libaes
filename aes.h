@@ -34,4 +34,5 @@ void add_round_key(uint8_t (*in)[4], uint8_t (*w)[4]);
 void convert_to_matrix(uint8_t* in, uint8_t (*out)[4]);
 void convert_to_array(uint8_t(*in)[4], uint8_t* out);
 void dump_matrix(uint8_t inp[4][4]);
+uint8_t multiply_by_two(uint8_t val);
 #endif
