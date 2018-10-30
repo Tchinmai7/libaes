@@ -22,6 +22,14 @@ uint8_t sbox[16][16] =  {
  {0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16}
 };
 
+void print_word(uint8_t* word, int len) 
+{
+    for (int i = 0; i < len; i++) {
+        printf("%02x", word[i]); 
+    }
+    printf("\n\n");
+}
+
 aes_params_t* init_aes_params()
 {
 	// set sane defaults.
@@ -33,13 +41,17 @@ aes_params_t* init_aes_params()
 	return param;
 }
 
-
 void set_aes_key(aes_params_t* param, aes_key_size_t key_size, uint8_t* key)
 {
 	param->key_size = key_size;
 	param->Nk = key_size/4;
 	param->key = malloc(key_size);
 	memcpy(param->key, key, key_size);
+}
+
+void set_aes_mode(aes_params_t* param, aes_modes_t mode)
+{
+	param->aes_mode = mode;
 }
 
 #define Nb 4
