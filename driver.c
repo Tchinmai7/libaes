@@ -20,14 +20,15 @@ int main(int argc, char* argv[])
     	printf("Error, input should be a multiple of 16\n");
 	return -1;
     }
-    memcpy(input, argv[1], 16);
-    uint8_t output[16] = {0x00}; 
+
+    memcpy(input, argv[1], strlen(argv[1]));
+    uint8_t output[strlen(argv[1])]; 
     printf("128 Bit AES - \n");
     printf("Plain: \t");
     print_word(input, 16);
-    printf("%s\n", input);
+    printf("STR: Input: %s\n", input);
     
-    encrypt(params, input, output);
+    encrypt(params, input, output, strlen(argv[1]));
     printf("Encrypted: \t");
     print_word(output, 16);
 
@@ -36,13 +37,13 @@ int main(int argc, char* argv[])
     printf("Decrypted: \t");
     print_word(plain, 16);
     printf("%s\n", plain);
-
+/*
     uint8_t key_192_bit[24] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17 };
     set_aes_key(params, AES_192_BIT, key_192_bit);
     printf("192 Bit AES - \n");
     printf("Plain: \t");
     print_word(input, 16);
-    encrypt(params, input, output);
+    encrypt(params, input, output, strlen(argv[1]));
     printf("Encrypted: \t");
     print_word(output, 16);
 
@@ -57,7 +58,7 @@ int main(int argc, char* argv[])
     printf("Plain: \t");
     print_word(input, 16);
     
-    encrypt(params, input, output);
+    encrypt(params, input, output, strlen(argv[1]));
     printf("Encrypted: \t");
     print_word(output, 16);
 
@@ -65,5 +66,6 @@ int main(int argc, char* argv[])
     printf("Decrypted: \t");
     print_word(plain, 16);
     printf("%s\n", plain);
+  */
     return 0;
 }

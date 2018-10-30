@@ -95,18 +95,18 @@ void rot_word(uint8_t* input)
     memcpy(input, temp, 4);
 }
 
-void xor(uint8_t* input, uint8_t* val)
+void xor(uint8_t* input, uint8_t* val, int length)
 {
-    input[0] = input[0] ^ val[0];
-    input[1] = input[1] ^ val[1];
-    input[2] = input[2] ^ val[2];
-    input[3] = input[3] ^ val[3];
+	for (int i = 0; i < length; i++) {
+		input[i] = input[i] ^ val[i];
+	}
 
 #ifdef DEBUG_KEYS
-    printf("xor: %02x%02x%02x%02x\t", input[0], input[1], input[2], input[3]);
+	printf("Xor:\t");
+	print_word(input, length);
 #endif
 }
-void xor_with_return(uint8_t* input, uint8_t* val, uint8_t* ret)
+void xor_with_return(uint8_t* input, uint8_t* val, uint8_t* ret, int length)
 {
     ret[0] = input[0] ^ val[0];
     ret[1] = input[1] ^ val[1];
@@ -191,7 +191,7 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
                 rot_word(temp);
                 sub_word(temp);
                 rcon_key[0] = getRcon(i/Nk);
-                xor(temp, rcon_key);
+                xor(temp, rcon_key, 4);
             }
             else if ((Nk > 6) &&  (i % Nk == 4)) {
                 sub_word(temp);
@@ -201,7 +201,7 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
             printf("W[i-Nk]: %02x%02x%02x%02x\n", *(w + j - Nk_bytes), *(w + j - Nk_bytes + 1), *(w + j - Nk_bytes + 2), *(w + j - Nk_bytes + 3));
 #endif
 
-            xor_with_return(w + j - Nk_bytes , temp, w + j);
+            xor_with_return(w + j - Nk_bytes , temp, w + j, 4);
             i = i + 1;
 
 #ifdef DEBUG_KEYS
