@@ -8,38 +8,42 @@ size_t aes_cbc_mode_decrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t
 	uint8_t iv[16] = {0x00};
 	// IV is in the first 16 bytes of the cipher text
 	memcpy(iv, input, 16);
+	int block_size = (input_length / 16);
+
+#ifdef DEBUG_DECRYPT
 	printf("The Decrypt IV is \n");
 	print_word(iv, 16);
 	print_word(input, input_length);
-	// The first block is the IV
-	int block_size = (input_length / 16);
-
 	printf("the num blocks is %d\n", block_size);
+#endif
 	uint8_t temp_ip[16] = {0x00};
 	uint8_t temp_op[16] = {0x00};
 	size_t output_length = 0;
+	// The first block is the IV
 	for (int i = 1; i < block_size; i++) {
 		memcpy(temp_ip, input + (i*16), 16);
 		inv_cipher(temp_ip, temp_op, expanded_key, Nk);
 		xor(temp_op, iv, 16);
 		memcpy(output+((i-1)*16), temp_op, 16);
 		memcpy(iv,temp_ip,16);
-		output_length+=16;
+		output_length++;
 	}
-	return output_length;
+	return output_length * 16;
 }
 
 size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t* output, int input_length)
 {
-    int Nr;
-    int len;
-    Nr = getNr(aes_params->Nk);
+    int Nr = getNr(aes_params->Nk);
     // the last *4 is to convert words to bytes
-    len = 4 * (Nr + 1) * 4;
+    int len = 4 * (Nr + 1) * 4;
     uint8_t expanded_key[len]; 
     expand_key(aes_params->key, aes_params->Nk, expanded_key);
+
+#ifdef DEBUG_KEYS
     printf("The expanded key is:\n");
     print_word(expanded_key, len);
+#endif
+
     switch(aes_params->aes_mode) {
 	    case AES_MODE_CBC:
 		   return aes_cbc_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
