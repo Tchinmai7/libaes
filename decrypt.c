@@ -1,7 +1,35 @@
 #include <stdio.h>
+#include <string.h>
 #include "inv_aes.h"
 #include "decrypt.h"
-void decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t* output)
+// Returns length of decrypted message
+size_t aes_cbc_mode_decrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
+{
+	uint8_t iv[16] = {0x00};
+	// IV is in the first 16 bytes of the cipher text
+	memcpy(iv, input, 16);
+	printf("The Decrypt IV is \n");
+	print_word(iv, 16);
+	print_word(input, input_length);
+	// The first block is the IV
+	int block_size = (input_length / 16);
+
+	printf("the num blocks is %d\n", block_size);
+	uint8_t temp_ip[16] = {0x00};
+	uint8_t temp_op[16] = {0x00};
+	size_t output_length = 0;
+	for (int i = 1; i < block_size; i++) {
+		memcpy(temp_ip, input + (i*16), 16);
+		inv_cipher(temp_ip, temp_op, expanded_key, Nk);
+		xor(temp_op, iv, 16);
+		memcpy(output+((i-1)*16), temp_op, 16);
+		memcpy(iv,temp_ip,16);
+		output_length+=16;
+	}
+	return output_length;
+}
+
+size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t* output, int input_length)
 {
     int Nr;
     int len;
@@ -12,5 +40,20 @@ void decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t* output)
     expand_key(aes_params->key, aes_params->Nk, expanded_key);
     printf("The expanded key is:\n");
     print_word(expanded_key, len);
-    inv_cipher(input, output, expanded_key, aes_params->Nk);
+    switch(aes_params->aes_mode) {
+	    case AES_MODE_CBC:
+		   return aes_cbc_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
+	    break;
+	    case AES_MODE_ECB:
+	    break;
+	    case AES_MODE_CTR:
+	    break;
+	    case AES_MODE_OFB:
+	    break;
+	    case AES_MODE_CFB:
+	    break;
+	    default:
+	    break;
+    }
+    return 0;
 }
