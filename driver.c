@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 	printf("Error, enter a value to encrypt!\n");
     	return -1;
     }
-    if (strlen(argv[1]) != 16) {
+    if ((strlen(argv[1]) % 16) != 0) {
     	printf("Error, input should be a multiple of 16\n");
 	return -1;
     }
