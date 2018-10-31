@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "aes.h"
+#include "utils.h"
 //TODO: @Sandhya: Replace this with the derivation
 uint8_t sbox[16][16] =  {
  {0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76},
@@ -21,14 +22,6 @@ uint8_t sbox[16][16] =  {
  {0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf},
  {0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16}
 };
-
-void print_word(uint8_t* word, int len) 
-{
-    for (int i = 0; i < len; i++) {
-        printf("%02x", word[i]); 
-    }
-    printf("\n\n");
-}
 
 void free_aes_params(aes_params_t* params)
 {
@@ -101,46 +94,6 @@ void rot_word(uint8_t* input)
     memcpy(input, temp, 4);
 }
 
-void xor(uint8_t* input, uint8_t* val, int length)
-{
-	for (int i = 0; i < length; i++) {
-		input[i] = input[i] ^ val[i];
-	}
-
-#ifdef DEBUG_KEYS
-	printf("Xor:\t");
-	print_word(input, length);
-#endif
-}
-
-void xor_with_return(uint8_t* input, uint8_t* val, uint8_t* ret, int length)
-{
-	for (int i = 0; i < length; i++) {
-    		ret[i] = input[i] ^ val[i];
-    	}
-
-#ifdef DEBUG_KEYS
-    printf("Xor with return:\t");
-    print_word(ret, length);
-#endif
-}
-
-int getNr(int Nk)
-{
-    if (Nk == 4) 
-    {
-        return 10;
-    }
-    else if (Nk == 6)
-    {
-        return 12;
-    }
-    else if (Nk == 8)
-    {
-        return 14;
-    }
-    return -1;
-}
 
 // Formula derived from https://en.wikipedia.org/wiki/Rijndael_key_schedule
 // Returns Round Constant given any index. 
@@ -198,7 +151,7 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
                 rot_word(temp);
                 sub_word(temp);
                 rcon_key[0] = getRcon(i/Nk);
-                xor(temp, rcon_key, 4);
+                Xor(temp, rcon_key, 4);
             }
             else if ((Nk > 6) &&  (i % Nk == 4)) {
                 sub_word(temp);
@@ -215,53 +168,6 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
             printf("\n");
 #endif
     }
-}
-
-void dump_matrix(uint8_t inp[4][4]) 
-{
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            printf("%02x\t", inp[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-
-void add_round_key(uint8_t (*in)[4], uint8_t (*w)[4]) 
-{
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            in[i][j] = in[i][j] ^ w[i][j];    
-        }
-    }
-
-#ifdef DEBUG_CIPHER
-    printf("Add Round Key:\n");
-    dump_matrix(in);
-#endif
-}
-
-void convert_to_matrix(uint8_t* in, uint8_t (*out)[4])
-{
-    int k = 0;
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            out[j][i] = in[k];
-            k++;
-        }
-    }   
-}
-
-void convert_to_array(uint8_t(*in)[4], uint8_t* out)
-{
-    int k = 0;
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            out[k] = in[j][i];
-            k++;
-        }
-    }   
 }
 
 void sub_bytes(uint8_t (*in)[4]) 
@@ -308,12 +214,6 @@ void shift_rows(uint8_t (*in)[4])
     printf("Shift Rows:\n");
     dump_matrix(in);
 #endif
-}
-
-// TODO: TARUN: Change this to something else
-uint8_t multiply_by_two(uint8_t val)
-{
-  return ((val<<1) ^ (((val>>7) & 1) * 0x1b));
 }
 
 void mix_columns(uint8_t (*in)[4]) 

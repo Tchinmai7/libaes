@@ -2,6 +2,7 @@
 #include <string.h>
 #include "inv_aes.h"
 #include "decrypt.h"
+#include "utils.h"
 size_t aes_ofb_mode_decrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
 	uint8_t iv[16] = {0x00};
@@ -26,7 +27,7 @@ size_t aes_ofb_mode_decrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t
 		memcpy(iv, temp_op, 16);
         // Xor the results of the encryption with the block of cipher text
 		memcpy(block, input + (i*16), 16);
-		xor(temp_op, block, 16);
+		Xor(temp_op, block, 16);
 		memcpy(output+((i-1)*16), temp_op, 16);
 		output_length++;
 	}
@@ -55,7 +56,7 @@ size_t aes_cfb_mode_decrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t
 		// encrypt the IV
 		cipher(iv, temp_op, expanded_key, Nk);
 		memcpy(block, input + (i*16), 16);
-		xor(temp_op, block, 16);
+		Xor(temp_op, block, 16);
 		memcpy(output+((i-1)*16), temp_op, 16);
 		memcpy(iv, block, 16);
 		output_length++;
@@ -102,7 +103,7 @@ size_t aes_cbc_mode_decrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t
 	for (int i = 1; i < block_size; i++) {
 		memcpy(block, input + (i*16), 16);
 		inv_cipher(block, temp_op, expanded_key, Nk);
-		xor(temp_op, iv, 16);
+		Xor(temp_op, iv, 16);
 		memcpy(output+((i-1)*16), temp_op, 16);
 		memcpy(iv,block,16);
 		output_length++;

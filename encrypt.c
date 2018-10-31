@@ -1,14 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "encrypt.h"
-void get_iv(uint8_t* iv, size_t size)
-{
-	FILE *f;
-	f = fopen("/dev/urandom", "r");
-	fread(iv, size, 1, f);
-	fclose(f);
-}
-
+#include "utils.h"
 size_t aes_ofb_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
 	int block_size = input_length / 16;
@@ -35,7 +28,7 @@ size_t aes_ofb_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t
         memcpy(iv, temp_op,16);
 		memcpy(block, input+(i*16), 16);
 		// Xor the encrypted val with the plain text
-        xor(temp_op, block, 16);
+        Xor(temp_op, block, 16);
 		memcpy(output+(i*16)+16, temp_op, 16);
 		output_length ++;
 	}
@@ -65,7 +58,7 @@ size_t aes_cfb_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t
 		// Then Xor with plain text
 		// Use the result as the IV for next
 		memcpy(block, input+(i*16), 16);
-		xor(temp_op, block, 16);
+		Xor(temp_op, block, 16);
 		memcpy(output+(i*16)+16, temp_op, 16);
 		memcpy(iv, temp_op,16);
 		output_length ++;
@@ -109,7 +102,7 @@ size_t aes_cbc_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t
 	size_t output_length = 1;
 	for (int i = 0; i < block_size; i++) {
 		memcpy(block, input+(i*16), 16);
-		xor(block, iv, 16);
+		Xor(block, iv, 16);
 		cipher(block, temp_op, expanded_key, Nk);
 		memcpy(output+(i*16)+16, temp_op, 16);
 		memcpy(iv, temp_op,16);

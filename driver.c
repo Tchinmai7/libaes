@@ -5,6 +5,7 @@
 #include "decrypt.h"
 #include "aes.h"
 #include "inv_aes.h"
+#include "utils.h"
 
 void test_encryption(uint8_t* key, aes_key_size_t key_size, uint8_t Nk, uint8_t* input, size_t input_size)
 {
