@@ -35,8 +35,8 @@ void test_encryption(uint8_t* key, aes_key_size_t key_size, uint8_t Nk, uint8_t*
 
 int main(int argc, char* argv[])
 {
-    if (argv[1] == NULL) {
-	printf("Error, enter a value to encrypt!\n");
+    if (argc < 2) {
+	    printf("Error, enter a value to encrypt!\n");
     	return -1;
     }
     size_t input_size = strlen(argv[1]);
@@ -53,7 +53,6 @@ int main(int argc, char* argv[])
     uint8_t key_128_bit[16] = {  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
     test_encryption(key_128_bit, AES_128_BIT, 4, input, input_size); 
     
-
     printf("192 Bit AES - \n");
     uint8_t key_192_bit[24] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17 };
     test_encryption(key_192_bit, AES_192_BIT, 6, input, input_size); 

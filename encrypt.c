@@ -1,13 +1,50 @@
 #include <stdio.h>
 #include <string.h>
 #include "encrypt.h"
-size_t aes_cfb_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
+void get_iv(uint8_t* iv)
 {
 	FILE *f;
-	uint8_t iv[16] = {0x00};
 	f = fopen("/dev/urandom", "r");
-	fread(&iv, 16, 1, f);
+	fread(iv, 16, 1, f);
 	fclose(f);
+}
+
+size_t aes_ofb_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
+{
+	int block_size = input_length / 16;
+    uint8_t iv[16] = {0x00};
+    get_iv(iv);
+
+#ifdef DEBUG_COFB
+	printf("The IV is \n");
+	print_word(iv, 16);
+	printf("the num blocks is %d\n", block_size);
+#endif 
+
+    uint8_t block[16] = {0x00};
+	uint8_t temp_op[16] = {0x00};
+	
+	// IV is in the first 16 bytes of the cipher text
+	memcpy(output, iv, 16);
+	//to account for the IV that's appended.
+	size_t output_length = 1;
+	for (int i = 0; i < block_size; i++) {
+		// First encrypt the IV
+		cipher(iv, temp_op, expanded_key, Nk);
+		// Use the encrypted value as the IV for next
+        memcpy(iv, temp_op,16);
+		memcpy(block, input+(i*16), 16);
+		// Xor the encrypted val with the plain text
+        xor(temp_op, block, 16);
+		memcpy(output+(i*16)+16, temp_op, 16);
+		output_length ++;
+	}
+    return output_length * 16;
+}
+size_t aes_cfb_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
+{
+    uint8_t iv[16] = {0x00};
+    get_iv(iv);
 	int block_size = input_length / 16;
 
 #ifdef DEBUG_CFB
@@ -21,7 +58,7 @@ size_t aes_cfb_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t
 	// IV is in the first 16 bytes of the cipher text
 	memcpy(output, iv, 16);
 	//to account for the IV that's appended.
-	size_t output_length = 16;
+	size_t output_length = 1;
 	for (int i = 0; i < block_size; i++) {
 		// First encrypt the IV
 		cipher(iv, temp_op, expanded_key, Nk);
@@ -31,9 +68,9 @@ size_t aes_cfb_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t
 		xor(temp_op, block, 16);
 		memcpy(output+(i*16)+16, temp_op, 16);
 		memcpy(iv, temp_op,16);
-		output_length += 16;
+		output_length ++;
 	}
-    	return output_length;
+    return output_length * 16;
 }
 
 size_t aes_ecb_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
@@ -49,16 +86,13 @@ size_t aes_ecb_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t
 		memcpy(output+(i*16), temp_op, 16);
 		output_length++;
 	}
-    	return output_length * 16;
+    return output_length * 16;
 }
 
 size_t aes_cbc_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
-	FILE *f;
-	uint8_t iv[16] = {0x00};
-	f = fopen("/dev/urandom", "r");
-	fread(&iv, 16, 1, f);
-	fclose(f);
+    uint8_t iv[16] = {0x00};
+    get_iv(iv);
 	int block_size = input_length / 16;
 
 #ifdef DEBUG_CBC
@@ -72,16 +106,16 @@ size_t aes_cbc_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t
 	// IV is in the first 16 bytes of the cipher text
 	memcpy(output, iv, 16);
 	//to account for the IV that's appended.
-	size_t output_length = 16;
+	size_t output_length = 1;
 	for (int i = 0; i < block_size; i++) {
 		memcpy(block, input+(i*16), 16);
 		xor(block, iv, 16);
 		cipher(block, temp_op, expanded_key, Nk);
 		memcpy(output+(i*16)+16, temp_op, 16);
 		memcpy(iv, temp_op,16);
-		output_length += 16;
+		output_length ++;
 	}
-    	return output_length;
+    return output_length * 16;
 }
 
 size_t encrypt(aes_params_t* aes_params, uint8_t* input, uint8_t* output, int input_length)
@@ -107,6 +141,7 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* input, uint8_t* output, int in
 	    case AES_MODE_CTR:
 	    break;
 	    case AES_MODE_OFB:
+		   return aes_ofb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
 	    break;
 	    case AES_MODE_CFB:
 		   return aes_cfb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
