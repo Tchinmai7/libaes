@@ -33,6 +33,10 @@ aes_params_t* init_aes_params()
 {
 	// set sane defaults.
 	aes_params_t* param = malloc(sizeof(aes_params_t));
+    if (param == NULL) {
+        // Fatal error!. Malloc failed, crash.
+        return NULL;
+    }
 	param->key_size = AES_128_BIT;
 	param->aes_mode = AES_MODE_CBC;
 	param->Nk = AES_128_BIT/4;
@@ -45,6 +49,10 @@ void set_aes_key(aes_params_t* param, aes_key_size_t key_size, uint8_t* key)
 	param->key_size = key_size;
 	param->Nk = key_size/4;
 	param->key = malloc(key_size);
+    if (param->key == NULL) {
+        // Fatal Error, Malloc failure
+        exit(-1);
+    }
 	memcpy(param->key, key, key_size);
 }
 

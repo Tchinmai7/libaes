@@ -12,6 +12,10 @@ void test_encryption(uint8_t* key, aes_key_size_t key_size, uint8_t Nk, uint8_t*
     printf("The key used is\n");
     print_word(key, Nk * 4); 
     aes_params_t* params = init_aes_params();
+    if (params == NULL) {
+        printf("Fatal error. unable to alloc aes params\n");
+        return;
+    } 
     set_aes_key(params, key_size, key); 
     printf("Bytes Plain: \t");
     print_word(input, input_size);
@@ -41,13 +45,20 @@ int main(int argc, char* argv[])
     	return -1;
     }
     size_t input_size = strlen(argv[1]);
+    
     if ((input_size % 16) != 0) {
     	printf("Error, input should be a multiple of 16\n");
-	return -1;
+	    return -1;
     }
+    
     uint8_t* input = NULL;
     printf("Input size is %ld\n", input_size);
     input = malloc(input_size);
+    if (input == NULL) {
+        printf("fatal error, malloc failure");
+        exit(-1);
+    }
+
     memcpy(input, argv[1], input_size);
 
     printf("128 Bit AES - \n");

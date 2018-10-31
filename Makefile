@@ -17,4 +17,4 @@ clean:
 	rm -f *.o   
 
 valgrind:
-	valgrind --leak-check=yes --track-origins=yes ./aes_sample tarunisagoodboy1tarunisagoodboy2asf2131232fqsc1234f1234521355678
+	valgrind --leak-check=yes --track-origins=yes ./aes_sample IsthisthereallifeIsthisjustfantasyCaughtinalandslideNoescapefromrealityOpenyoureyesLookuptotheskiesandseeI\'mjustapoorboyIneednosympathyeasycomeeasygowillyouletm
