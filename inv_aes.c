@@ -126,7 +126,8 @@ void inv_mix_columns(uint8_t (*in)[4])
 
 void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
 {
-    uint8_t state[4][4] = {0x00};
+    //Initialize with double braces to ensure that all objects are 0'd
+    uint8_t state[4][4] = {{0x00}};
     uint8_t temp[16] = {0x00}; 
     convert_to_matrix(in, state);
 
@@ -137,7 +138,7 @@ void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
 
     int Nr = getNr(Nk);
     memcpy(temp, w + (Nr * 4 * 4), 16);
-    uint8_t roundKey[4][4] = {0x00};
+    uint8_t roundKey[4][4] = {{0x00}};
     convert_to_matrix(temp, roundKey);
     
 #ifdef DEBUG_INV_CIPHER

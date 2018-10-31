@@ -246,10 +246,10 @@ void mix_columns(uint8_t (*in)[4])
 
 void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
 {
-    uint8_t state[4][4] = {0x00};
+    uint8_t state[4][4] = {{0x00}};
     uint8_t temp[16] = {0x00}; 
     memcpy(temp, w, 16);
-    uint8_t roundKey[4][4] = {0x00};
+    uint8_t roundKey[4][4] = {{0x00}};
     convert_to_matrix(in, state);
 
 #ifdef DEBUG_CIPHER
