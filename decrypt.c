@@ -5,26 +5,28 @@
 
 size_t aes_cfb_mode_decrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
-	uint8_t block[16] = {0x00};
+	uint8_t iv[16] = {0x00};
 	// IV is in the first 16 bytes of the cipher text
-	memcpy(block, input, 16);
+	memcpy(iv, input, 16);
 	int block_size = (input_length / 16);
 
 #ifdef DEBUG_CFB
 	printf("The Decrypt IV is \n");
-	print_word(block, 16);
+	print_word(iv, 16);
 	print_word(input, input_length);
 	printf("the num blocks is %d\n", block_size);
 #endif
 	uint8_t temp_op[16] = {0x00};
+	uint8_t block[16] = {0x00};
 	size_t output_length = 0;
 	// The first block is the IV
 	for (int i = 1; i < block_size; i++) {
 		// encrypt the IV
-		cipher(block, temp_op, expanded_key, Nk);
 		memcpy(block, input + (i*16), 16);
-		xor(block, temp_op, 16);
-		memcpy(output+((i-1)*16), block, 16);
+		cipher(iv, temp_op, expanded_key, Nk);
+		xor(temp_op, block, 16);
+		memcpy(output+((i-1)*16), temp_op, 16);
+		memcpy(iv, block, 16);
 		output_length++;
 	}
 	return output_length * 16;
