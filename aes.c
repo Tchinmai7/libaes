@@ -41,7 +41,7 @@ aes_params_t* init_aes_params()
 	// set sane defaults.
 	aes_params_t* param = malloc(sizeof(aes_params_t));
 	param->key_size = AES_128_BIT;
-	param->aes_mode = AES_MODE_OFB;
+	param->aes_mode = AES_MODE_CBC;
 	param->Nk = AES_128_BIT/4;
 	param->key = NULL;
 	return param;
