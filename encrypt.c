@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 #include "encrypt.h"
-void get_iv(uint8_t* iv)
+void get_iv(uint8_t* iv, size_t size)
 {
 	FILE *f;
 	f = fopen("/dev/urandom", "r");
-	fread(iv, 16, 1, f);
+	fread(iv, size, 1, f);
 	fclose(f);
 }
 
@@ -13,7 +13,7 @@ size_t aes_ofb_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t
 {
 	int block_size = input_length / 16;
     uint8_t iv[16] = {0x00};
-    get_iv(iv);
+    get_iv(iv, 16);
 
 #ifdef DEBUG_COFB
 	printf("The IV is \n");
@@ -44,7 +44,7 @@ size_t aes_ofb_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t
 size_t aes_cfb_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     uint8_t iv[16] = {0x00};
-    get_iv(iv);
+    get_iv(iv, 16);
 	int block_size = input_length / 16;
 
 #ifdef DEBUG_CFB
@@ -92,7 +92,7 @@ size_t aes_ecb_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t
 size_t aes_cbc_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     uint8_t iv[16] = {0x00};
-    get_iv(iv);
+    get_iv(iv, 16);
 	int block_size = input_length / 16;
 
 #ifdef DEBUG_CBC
