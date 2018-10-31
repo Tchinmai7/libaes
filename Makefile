@@ -10,11 +10,11 @@ OBJ = aes.o inv_aes.o encrypt.o decrypt.o driver.o
 aes_sample: $(OBJ)
 	$(CC) -g -o $@ $^ $(CFLAGS)
 
-debug: $(OBJ)
-	$(CC) -g -o $@ $^ $(CFLAGS) 
-
-.PHONY: clean
+.PHONY: clean valgrind 
 
 clean:
 	rm -f aes_sample
 	rm -f *.o   
+
+valgrind:
+	valgrind --leak-check=yes --track-origins=yes ./aes_sample tarunisagoodboy1tarunisagoodboy2asf2131232fqsc1234f1234521355678

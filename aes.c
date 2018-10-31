@@ -30,6 +30,12 @@ void print_word(uint8_t* word, int len)
     printf("\n\n");
 }
 
+void free_aes_params(aes_params_t* params)
+{
+	free(params->key);
+	free(params);
+}
+
 aes_params_t* init_aes_params()
 {
 	// set sane defaults.
@@ -106,15 +112,16 @@ void xor(uint8_t* input, uint8_t* val, int length)
 	print_word(input, length);
 #endif
 }
+
 void xor_with_return(uint8_t* input, uint8_t* val, uint8_t* ret, int length)
 {
-    ret[0] = input[0] ^ val[0];
-    ret[1] = input[1] ^ val[1];
-    ret[2] = input[2] ^ val[2];
-    ret[3] = input[3] ^ val[3];
+	for (int i = 0; i < length; i++) {
+    		ret[i] = input[i] ^ val[i];
+    	}
 
 #ifdef DEBUG_KEYS
-    printf("xor with Return: %02x%02x%02x%02x\n", ret[0], ret[1], ret[2], ret[3]);
+    printf("Xor with return:\t");
+    print_word(ret, length);
 #endif
 }
 

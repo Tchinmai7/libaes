@@ -23,6 +23,7 @@ typedef struct {
 } aes_params_t;
 
 aes_params_t* init_aes_params();
+void free_aes_params(aes_params_t* params);
 void set_aes_key(aes_params_t* param, aes_key_size_t key_size, uint8_t* key);
 void SubWord(uint8_t* input);
 void RotWord(uint8_t* input);
