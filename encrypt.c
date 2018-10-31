@@ -36,6 +36,22 @@ size_t aes_cfb_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t
     	return output_length;
 }
 
+size_t aes_ecb_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
+{
+	int block_size = input_length / 16;
+	uint8_t block[16] = {0x00};
+	uint8_t temp_op[16] = {0x00};
+	
+	size_t output_length = 0;
+	for (int i = 0; i < block_size; i++) {
+		memcpy(block, input+(i*16), 16);
+		cipher(block, temp_op, expanded_key, Nk);
+		memcpy(output+(i*16), temp_op, 16);
+		output_length++;
+	}
+    	return output_length * 16;
+}
+
 size_t aes_cbc_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
 	FILE *f;
@@ -86,6 +102,7 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* input, uint8_t* output, int in
 		   return aes_cbc_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
 	    break;
 	    case AES_MODE_ECB:
+	           return aes_ecb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
 	    break;
 	    case AES_MODE_CTR:
 	    break;

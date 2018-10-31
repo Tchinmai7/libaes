@@ -17,6 +17,8 @@ void test_encryption(uint8_t* key, aes_key_size_t key_size, uint8_t Nk, uint8_t*
     printf("STR: Input: %s\n", input);
     
     uint8_t output[input_size + 16]; 
+    //use this if you want to do ECB
+    //uint8_t output[input_size];
     size_t enc_len = encrypt(params, input, output, input_size);
     printf("Encrypted bytes: \t");
     print_word(output, enc_len);
