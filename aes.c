@@ -268,7 +268,7 @@ void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
     
     int Nr = getNr(Nk);
     //TODO: handle negative
-    int round = 1;
+    int round;
 
     for (round = 1; round < Nr; round++) {
 #ifdef DEBUG_CIPHER
