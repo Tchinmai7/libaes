@@ -1,75 +1,60 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <stdint.h>
+#include <stdlib.h>
 
-uint8_t* addpadding(uint8_t *messagebuf, size_t msglen)
+uint8_t* addpadding(uint8_t* messagebuf, size_t msglen)
 {
-    // Msglen % 16 == 0 (blocksize is perfect) - add one fully padded block i.e, bytes to pad = 16
-    // bytes to pad = msglen % 16
-    // msglen will be input buffer size. 
-    // malloc(msglen+bytestopad);
-    // memcpy(newbuf, messagebuf, msglen);
-    // memset(padding logic);
-    // %02x is hex 
-    // return newbuf
-	size_t	padlen, padbuflen; //padlen is the length of padded bits; padbuflen is length of msg after padding
-	uint8_t *padbuf; //msg after padding
-	uint8_t multiple; //multiple is Nk value (128 or 192 or 256)
-//Have to compute padbuflen
-	padlen = multiple - (msglen % multiple);
-	if (messagebuf == NULL)
-		msglen = 0;
-
-	//if (padlen > padbuflen - datalen) {
-		//return (CKR_DATA_LEN_RANGE); //Not sure of the return values
-	//}
-
-	bcopy(messagebuf, padbuf, msglen); 
-	void memset (padbuf + msglen, padlen & 0xff, padlen);
-
-	return (print_word(padbuf, padbuflen)); 
-}
-
-// uncomment the commented portions if required
-
-uint8_t* strippadding(uint8_t *padbuf, size_t *plen)
-{
-    // Get a padded buffer
-    // read the uint8_t lastbyte = padbuf[buflen - 1]
-    // (or) lastbyte = padbuf + buflen - 1
-    // newbuf = malloc(plen - int(lastbyte))
-    // memcpy(newbuf, padbuf, plen-int(lastbyte))
-	int	i;
-	size_t	padlen;
-
-	/* Recover the padding value, even if padbuf has trailing nulls */
-	//while (*plen > 0 && (padlen = padbuf[*plen - 1]) == 0)
-		//(*plen)--;
-
-	/* Must have non-zero padding */
-	//if (padlen == 0)
-		//return (CKR_ENCRYPTED_DATA_INVALID); //Not sure of the return values
-
-	for (i = 0; i < padlen && (*plen - 1 - i) >= 0; i++) {    //Count back from all padding bytes
-		//if (padbuf[*plen - 1 - i] != (padlen & 0xff))
-			//return (CKR_ENCRYPTED_DATA_INVALID);
-	}
-	*plen -= i;
-	return (print_word(padbuf,plen));
+    size_t bytestopad;
+    if((msglen%16)==0){
+    bytestopad=16-msglen;
+    printf("\n\nbytestopad=%02x\n\n", bytestopad);
+    uint8_t *newbuf=malloc(msglen+16);
+    memcpy(newbuf,messagebuf,msglen);
+    memset(newbuf+msglen,bytestopad,16);
+    return newbuf;
+    }
+     
+    else{
+    bytestopad=16-(msglen%16);
+    printf("\n\nbytestopad=%02x i.e %d\n\n", bytestopad,bytestopad);
+    uint8_t *newbuf=malloc(msglen+bytestopad);
+    memcpy(newbuf,messagebuf,msglen);
+    memset(newbuf+msglen,bytestopad,bytestopad);
+    return newbuf;
+    }
+    
 }
 
 
+
+uint8_t* strippadding(uint8_t* padbuf, int buflen)
+{
+
+	size_t lastbyte=padbuf[buflen-1];
+	//printf("\n\n%d", lastbyte);
+	uint8_t *newbuf=malloc(buflen-(int)lastbyte);
+	memcpy(newbuf,padbuf,buflen-(int)lastbyte);
+	return newbuf;
+
+}
+
+void print_word(uint8_t* word, int len) 
+{
+    for (int i = 0; i < len; i++) {
+        printf("%02x", word[i]); 
+    }
+    printf("\n\n");
+}
 int main()
 {
-    uint8_t message[12] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc};
-    /*
-    uint8_t* padded_msg = addpadding(message, 12);
-    print_word(padded_msg, 16);
-    uint8_t *stripped_msg = strippadding(padded_msg, 16);
-    print_word(stripped_msg, 12);
-    */
-    //print_word(message,16);
-    //addpadding(uint8_t message,size_t messagelen) //compute messagelen
-
+    //uint8_t message[19] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x12, 0x13, 0x14};
+    //uint8_t message[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+    uint8_t message[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
+    uint8_t* padded_msg = addpadding(message, 16);
+    print_word(padded_msg,32);
+    uint8_t* stripped_msg = strippadding(padded_msg,32);
+    print_word(stripped_msg, 16);
     return 0;
 }
+
