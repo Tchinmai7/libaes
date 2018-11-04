@@ -3,6 +3,42 @@
 #include "inv_aes.h"
 #include "decrypt.h"
 #include "utils.h"
+size_t aes_ctr_mode_decrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
+{
+	uint8_t iv[16] = {0x00};
+	// IV is in the first 16 bytes of the cipher text
+	memcpy(iv, input, 16);
+    // The last 8 bytes of IV contain the starting ctr
+    uint64_t ctr = 0;
+    memcpy(&ctr, iv+8, 8);
+	int block_size = (input_length / 16);
+
+#ifdef DEBUG_OFB
+	printf("The Decrypt IV is \n");
+	print_word(iv, 16);
+	printf("the num blocks is %d\n", block_size);
+#endif
+
+	uint8_t temp_op[16] = {0x00};
+	uint8_t block[16] = {0x00};
+	size_t output_length = 0;
+	// The first block is the IV
+	for (int i = 1; i < block_size; i++) {
+		// encrypt the IV
+		cipher(iv, temp_op, expanded_key, Nk);
+        // Increment the counter;
+        ctr++;
+        // copy the ctr into the last 8 bytes of the IV
+        memcpy(iv+8, &ctr, 8);
+
+        // Xor the results of the encryption with the block of cipher text
+		memcpy(block, input + (i*16), 16);
+		Xor(temp_op, block, 16);
+		memcpy(output+((i-1)*16), temp_op, 16);
+		output_length++;
+	}
+	return output_length * 16;
+}
 size_t aes_ofb_mode_decrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
 	uint8_t iv[16] = {0x00};
@@ -132,6 +168,7 @@ size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t* output, int in
 		   return aes_ecb_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
 	    break;
 	    case AES_MODE_CTR:
+		   return aes_ctr_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
 	    break;
 	    case AES_MODE_OFB:
 		   return aes_ofb_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
