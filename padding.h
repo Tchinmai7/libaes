@@ -1,0 +1,9 @@
+#ifndef __PADDING_H
+#define __PADDING_H
+#include <stdint.h>
+#include <sys/types.h>
+// Takes input un-padded string and a output buffer. will be malloc'ed inside the code.
+// Returns the length of padded string
+uint8_t addpadding(uint8_t* messagebuf, uint8_t** output_buf, int input_msglen);
+uint8_t strippadding(uint8_t* padbuf, uint8_t** output_buf, int buflen);
+#endif

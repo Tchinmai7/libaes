@@ -1,59 +1,46 @@
 #include <stdio.h>
-#include <sys/types.h>
-#include <stdint.h>
+#include <string.h>
 #include <stdlib.h>
+#include "padding.h"
 
-uint8_t* addpadding(uint8_t* messagebuf, size_t msglen)
+uint8_t addpadding(uint8_t* messagebuf, uint8_t **output_buf, int input_msglen)
 {
     size_t bytestopad;
-    if( (msglen%16) == 0){
+    if( (input_msglen % 16) == 0){
         bytestopad = 16;
-        printf("\n\nbytestopad=%02x\n\n", bytestopad);
-        uint8_t *newbuf=malloc(msglen+16);
-        memcpy(newbuf,messagebuf,msglen);
-        memset(newbuf+msglen,bytestopad,16);
-        return newbuf;
+        *output_buf = malloc(input_msglen + 16);
+        memcpy(*output_buf,messagebuf,input_msglen);
+        memset(*output_buf + input_msglen, bytestopad, 16);
+        return input_msglen + bytestopad;
     }
 
     else{
-        bytestopad=16-(msglen%16);
-        printf("\n\nbytestopad=%02x i.e %d\n\n", bytestopad,bytestopad);
-        uint8_t *newbuf=malloc(msglen+bytestopad);
-        memcpy(newbuf,messagebuf,msglen);
-        memset(newbuf+msglen,bytestopad,bytestopad);
-        return newbuf;
+        bytestopad = 16 - (input_msglen % 16);
+        *output_buf = malloc(input_msglen + bytestopad);
+        memcpy(*output_buf, messagebuf, input_msglen);
+        memset(*output_buf + input_msglen, bytestopad, bytestopad);
+        return input_msglen + bytestopad;
     }
 }
 
-
-
-uint8_t* strippadding(uint8_t* padbuf, int buflen)
+uint8_t strippadding(uint8_t* padbuf,  uint8_t **outputbuf, int buflen)
 {
-
-    size_t lastbyte=padbuf[buflen-1];
-    //printf("\n\n%d", lastbyte);
-    uint8_t *newbuf=malloc(buflen-(int)lastbyte);
-    memcpy(newbuf,padbuf,buflen-(int)lastbyte);
-    return newbuf;
+    uint8_t lastbyte = padbuf[buflen-1];
+    *outputbuf = malloc(buflen - lastbyte);
+    memcpy(*outputbuf, padbuf, buflen - lastbyte);
+    return buflen - lastbyte;
 }
 
-void print_word(uint8_t* word, int len) 
-{
-    for (int i = 0; i < len; i++) {
-        printf("%02x", word[i]); 
-    }
-    printf("\n\n");
-}
-
+#ifdef PADDING_TEST
 int main()
 {
-    //uint8_t message[19] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x12, 0x13, 0x14};
-    //uint8_t message[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
     uint8_t message[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
-    uint8_t* padded_msg = addpadding(message, 16);
-    print_word(padded_msg,32);
-    uint8_t* stripped_msg = strippadding(padded_msg,32);
-    print_word(stripped_msg, 16);
+    uint8_t* padded_msg = NULL;
+    uint8_t padlen = addpadding(message, &padded_msg,  16);
+    print_word(padded_msg, padlen);
+    uint8_t* stripped_msg =  NULL;
+    uint8_t orig_len = strippadding(padded_msg, &stripped_msg, padlen);
+    print_word(stripped_msg, orig_len);
     return 0;
 }
-
+#endif
