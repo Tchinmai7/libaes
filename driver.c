@@ -46,11 +46,6 @@ int main(int argc, char* argv[])
     }
     size_t input_size = strlen(argv[1]);
     
-    if ((input_size % 16) != 0) {
-    	printf("Error, input should be a multiple of 16\n");
-	    return -1;
-    }
-    
     uint8_t* input = NULL;
     printf("Input size is %ld\n", input_size);
     input = malloc(input_size);

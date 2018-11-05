@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "encrypt.h"
+#include "padding.h"
 #include "utils.h"
 
 size_t aes_ctr_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
@@ -149,7 +151,7 @@ size_t aes_cbc_mode_encrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t
     return output_length * 16;
 }
 
-size_t encrypt(aes_params_t* aes_params, uint8_t* input, uint8_t* output, int input_length)
+size_t encrypt(aes_params_t* aes_params, uint8_t* ip, uint8_t* output, int ip_len)
 {
     int Nr = getNr(aes_params->Nk);
     // the last *4 is to convert words to bytes
@@ -161,25 +163,32 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* input, uint8_t* output, int in
     printf("The expanded key is:\n");
     print_word(expanded_key, len);
 #endif
-    // implement modes here.
+    uint8_t* input = NULL; 
+    // Pad the message. We don't care if the message is a multiple of 16. Always Pad.
+    size_t input_length = add_padding(ip, &input, ip_len);
+    size_t output_length = 0;
+    printf("The padded message is of len %ld\n", input_length);
+    print_word(input, input_length);
+
     switch(aes_params->aes_mode) {
 	    case AES_MODE_CBC:
-		   return aes_cbc_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
+		   output_length = aes_cbc_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
 	    break;
 	    case AES_MODE_ECB:
-	           return aes_ecb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
+	        output_length = aes_ecb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
 	    break;
 	    case AES_MODE_CTR:
-		   return aes_ctr_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
+		   output_length = aes_ctr_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
 	    break;
 	    case AES_MODE_OFB:
-		   return aes_ofb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
+		   output_length = aes_ofb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
 	    break;
 	    case AES_MODE_CFB:
-		   return aes_cfb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
+		   output_length = aes_cfb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
 	    break;
 	    default:
 	    break;
     }
-    return 0;
+    free(input);
+    return output_length;
 }

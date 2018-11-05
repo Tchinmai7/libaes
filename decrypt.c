@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "inv_aes.h"
 #include "decrypt.h"
 #include "utils.h"
+#include "padding.h"
+
 size_t aes_ctr_mode_decrypt(uint8_t* input, uint8_t* output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
 	uint8_t iv[16] = {0x00};
@@ -159,25 +162,26 @@ size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t* output, int in
     printf("The expanded key is:\n");
     print_word(expanded_key, len);
 #endif
+    size_t output_length = 0;
 
     switch(aes_params->aes_mode) {
 	    case AES_MODE_CBC:
-		   return aes_cbc_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
+		   output_length = aes_cbc_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
 	    break;
 	    case AES_MODE_ECB:
-		   return aes_ecb_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
+		   output_length = aes_ecb_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
 	    break;
 	    case AES_MODE_CTR:
-		   return aes_ctr_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
+		   output_length = aes_ctr_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
 	    break;
 	    case AES_MODE_OFB:
-		   return aes_ofb_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
+		   output_length = aes_ofb_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
 	    break;
 	    case AES_MODE_CFB:
-		   return aes_cfb_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
+		   output_length = aes_cfb_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
 	    break;
 	    default:
 	    break;
     }
-    return 0;
+    return output_length;
 }

@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include "padding.h"
 
-uint8_t addpadding(uint8_t* messagebuf, uint8_t **output_buf, int input_msglen)
+size_t add_padding(uint8_t* messagebuf, uint8_t **output_buf, int input_msglen)
 {
     size_t bytestopad;
-    if( (input_msglen % 16) == 0){
+    if ((input_msglen % 16) == 0) {
         bytestopad = 16;
         *output_buf = malloc(input_msglen + 16);
         memcpy(*output_buf,messagebuf,input_msglen);
@@ -14,7 +14,7 @@ uint8_t addpadding(uint8_t* messagebuf, uint8_t **output_buf, int input_msglen)
         return input_msglen + bytestopad;
     }
 
-    else{
+    else {
         bytestopad = 16 - (input_msglen % 16);
         *output_buf = malloc(input_msglen + bytestopad);
         memcpy(*output_buf, messagebuf, input_msglen);
@@ -23,9 +23,10 @@ uint8_t addpadding(uint8_t* messagebuf, uint8_t **output_buf, int input_msglen)
     }
 }
 
-uint8_t strippadding(uint8_t* padbuf,  uint8_t **outputbuf, int buflen)
+size_t strip_padding(uint8_t* padbuf,  uint8_t **outputbuf, int buflen)
 {
     uint8_t lastbyte = padbuf[buflen-1];
+    printf("Stripping away %d bytes. The output buf is of size %d\n", lastbyte, buflen - lastbyte);
     *outputbuf = malloc(buflen - lastbyte);
     memcpy(*outputbuf, padbuf, buflen - lastbyte);
     return buflen - lastbyte;
