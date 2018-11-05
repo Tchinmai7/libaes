@@ -28,10 +28,10 @@ void test_encryption(uint8_t* key, aes_key_size_t key_size, uint8_t Nk, uint8_t*
     printf("Encrypted bytes: \t");
     print_word(output, enc_len);
 
-    uint8_t plain[input_size+1];
-    size_t dec_len = decrypt(params, output, plain, enc_len);
+    uint8_t* plain = NULL;
+    size_t dec_len = decrypt(params, output, &plain, enc_len);
     // Null terminate the string
-    plain[input_size] = '\0';
+    plain[dec_len] = '\0';
     printf("Decrypted bytes: \t");
     print_word(plain, dec_len);
     printf("decrypted_string %s\n", plain);

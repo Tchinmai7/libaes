@@ -25,11 +25,10 @@ size_t add_padding(uint8_t* messagebuf, uint8_t **output_buf, int input_msglen)
 
 size_t strip_padding(uint8_t* padbuf,  uint8_t **outputbuf, int buflen)
 {
-    uint8_t lastbyte = padbuf[buflen-1];
-    printf("Stripping away %d bytes. The output buf is of size %d\n", lastbyte, buflen - lastbyte);
+    uint8_t lastbyte = padbuf[buflen - 1];
     *outputbuf = malloc(buflen - lastbyte);
-    memcpy(*outputbuf, padbuf, buflen - lastbyte);
-    return buflen - lastbyte;
+    memcpy(*outputbuf, padbuf, (buflen - lastbyte));
+    return (buflen - lastbyte);
 }
 
 #ifdef PADDING_TEST
