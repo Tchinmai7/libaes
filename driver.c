@@ -21,10 +21,10 @@ void test_encryption(uint8_t* key, aes_key_size_t key_size, uint8_t Nk, uint8_t*
     print_word(input, input_size);
     printf("STR: Input: %s\n", input);
     
-    uint8_t output[input_size + 16]; 
+    uint8_t* output = NULL; 
     //use this if you want to do ECB
     //uint8_t output[input_size];
-    size_t enc_len = encrypt(params, input, output, input_size);
+    size_t enc_len = encrypt(params, input, &output, input_size);
     printf("Encrypted bytes: \t");
     print_word(output, enc_len);
 
@@ -35,6 +35,7 @@ void test_encryption(uint8_t* key, aes_key_size_t key_size, uint8_t Nk, uint8_t*
     printf("Decrypted bytes: \t");
     print_word(plain, dec_len);
     printf("decrypted_string %s\n", plain);
+    free(output);
     free_aes_params(params);
 }
 
