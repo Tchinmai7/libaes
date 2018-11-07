@@ -37,9 +37,12 @@ aes_params_t* init_aes_params()
         // Fatal error!. Malloc failed, crash.
         return NULL;
     }
+    // TODO: Maybe use 256 bit key always
 	param->key_size = AES_128_BIT;
 	param->aes_mode = AES_MODE_CBC;
 	param->Nk = AES_128_BIT/4;
+    // TODO: If we go with secure random keys, generate keys here
+    // Think about getting user input as a seed to the PRG.
 	param->key = NULL;
 	return param;
 }
@@ -122,6 +125,7 @@ uint8_t getRcon(int idx)
     return rc[idx];
 }
 
+//TODO: Rename w to expanded_key
 void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
 {
     uint8_t i = 0;
@@ -129,10 +133,12 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
     uint8_t rcon_key[4] = {0x00};
     int Nk_bytes = Nk * 4;
     int Nr = getNr(Nk);
+
     if (Nr < 0 ) {
         printf("Fatal Error., invalid keysize\n");
         return;
     }
+
     while ( i <  4 * Nk ) {
         temp [0] = key[i];
         temp [1] = key[i + 1];
@@ -146,6 +152,7 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
         memcpy(w + i , temp, 4);
         i += 4;
     }
+
     i = Nk;
     while (i < Nb * (Nr + 1)) {
             int j = i * 4;
@@ -169,7 +176,7 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
             printf("W[i-Nk]: %02x%02x%02x%02x\n", *(w + j - Nk_bytes), *(w + j - Nk_bytes + 1), *(w + j - Nk_bytes + 2), *(w + j - Nk_bytes + 3));
 #endif
 
-            xor_with_return(w + j - Nk_bytes , temp, w + j, 4);
+            xor_with_return(w + j - Nk_bytes, temp, w + j, 4);
             i = i + 1;
 
 #ifdef DEBUG_KEYS

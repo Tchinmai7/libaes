@@ -126,6 +126,7 @@ size_t aes_cbc_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
 {
     uint8_t iv[16] = {0x00};
     get_iv(iv, 16);
+    // TODO: Rename as num_blocks
     int block_size = input_length / 16;
 
 #ifdef DEBUG_CBC
@@ -133,6 +134,7 @@ size_t aes_cbc_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     print_word(iv, 16);
     printf("the num blocks is %d\n", block_size);
 #endif 
+
     uint8_t block[16] = {0x00};
     uint8_t temp_op[16] = {0x00};
 
@@ -144,9 +146,10 @@ size_t aes_cbc_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
         memcpy(block, input + (i * 16), 16);
         Xor(block, iv, 16);
         cipher(block, temp_op, expanded_key, Nk);
+        // a +16 is needed because of the IV
         memcpy(*output + ( i * 16) + 16, temp_op, 16);
-        memcpy(iv, temp_op,16);
-        output_length ++;
+        memcpy(iv, temp_op, 16);
+        output_length++;
     }
     return output_length * 16;
 }
@@ -163,12 +166,16 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* ip, uint8_t** output, int ip_l
     printf("The expanded key is:\n");
     print_word(expanded_key, len);
 #endif
+
     uint8_t* input = NULL; 
     // Pad the message. We don't care if the message is a multiple of 16. Always Pad.
     size_t input_length = add_padding(ip, &input, ip_len);
     size_t output_length = 0;
+
+#ifdef DEBUG_PADDING
     printf("The padded message is of len %ld\n", input_length);
     print_word(input, input_length);
+#endif
 
     switch(aes_params->aes_mode) {
         case AES_MODE_CBC:

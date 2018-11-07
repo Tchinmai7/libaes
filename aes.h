@@ -7,6 +7,7 @@ typedef enum {
     AES_MODE_CTR = 2,
     AES_MODE_OFB = 3,
     AES_MODE_CFB = 4
+        //TODO: Maybe add GCM
 } aes_modes_t;
 
 typedef enum {
@@ -22,6 +23,7 @@ typedef struct {
     uint8_t* key;
 } aes_params_t;
 
+// Always call init parameters first
 aes_params_t* init_aes_params();
 void free_aes_params(aes_params_t* params);
 void set_aes_key(aes_params_t* param, aes_key_size_t key_size, uint8_t* key);

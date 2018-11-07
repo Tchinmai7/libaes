@@ -169,28 +169,30 @@ size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int i
     switch(aes_params->aes_mode) {
         case AES_MODE_CBC:
             // Padded output string will be 16 bytes less than the input (for the IV)
-            padded_op = malloc(input_length - 16 + 1); 
+            padded_op = malloc(input_length - 16); 
             output_length = aes_cbc_mode_decrypt(input, &padded_op, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_ECB:
-            padded_op = malloc(input_length + 1);
+            padded_op = malloc(input_length);
             output_length = aes_ecb_mode_decrypt(input, &padded_op, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_CTR:
-            padded_op = malloc(input_length - 16 + 1); 
+            padded_op = malloc(input_length - 16); 
             output_length = aes_ctr_mode_decrypt(input, &padded_op, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_OFB:
-            padded_op = malloc(input_length - 16 + 1); 
+            padded_op = malloc(input_length - 16); 
             output_length = aes_ofb_mode_decrypt(input, &padded_op, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_CFB:
-            padded_op = malloc(input_length - 16 + 1); 
+            padded_op = malloc(input_length - 16); 
             output_length = aes_cfb_mode_decrypt(input, &padded_op, aes_params->Nk, expanded_key, input_length);
             break;
         default:
             break;
     }
+
     size_t op_len = strip_padding(padded_op, output, output_length);
+    free(padded_op);
     return op_len;
 }

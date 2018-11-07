@@ -106,6 +106,9 @@ void add_round_key(uint8_t (*in)[4], uint8_t (*w)[4])
 void get_iv(uint8_t* iv, size_t size)
 {
 	FILE *f;
+    // This is non-blocking, but it is a PRNG.
+    // /dev/random is blocking, but it is a TRNG
+    // TODO: Read about attacks on urandom/random
 	f = fopen("/dev/urandom", "r");
 	fread(iv, size, 1, f);
 	fclose(f);
