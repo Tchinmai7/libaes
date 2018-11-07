@@ -1,4 +1,5 @@
 CC=gcc
+#TODO: Add compiler flags to secure against buffer overflow
 CFLAGS=-Wall -Werror -I.
 #CFLAGS=-Wall -Werror -I. -DDEBUG_KEYS=1 -DDEBUG_CIPHER=1
 DEPS = aes.h inv_aes.h decrypt.h encrypt.h utils.h padding.h

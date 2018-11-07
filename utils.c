@@ -86,7 +86,7 @@ void convert_to_array(uint8_t(*in)[4], uint8_t* out)
 // TODO: TARUN: Change this to something else
 uint8_t multiply_by_two(uint8_t val)
 {
-  return ((val<<1) ^ (((val>>7) & 1) * 0x1b));
+  return ((val << 1) ^ (((val >> 7) & 1) * 0x1b));
 }
 
 void add_round_key(uint8_t (*in)[4], uint8_t (*w)[4]) 
