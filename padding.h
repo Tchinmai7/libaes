@@ -1,5 +1,6 @@
-#ifndef __PADDING_H
-#define __PADDING_H
+// Don't add _ before include guards - DCL37-C in SEI guide
+#ifndef PADDING_H
+#define PADDING_H
 #include <stdint.h>
 #include <sys/types.h>
 // Takes input un-padded string and a output buffer. will be malloc'ed inside the code.

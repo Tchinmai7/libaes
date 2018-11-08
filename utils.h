@@ -1,5 +1,6 @@
-#ifndef __UTIL_H
-#define __UTIL_H
+// Don't add _ before include guards - DCL37-C in SEI guide
+#ifndef UTIL_H
+#define UTIL_H
 #include <stdint.h>
 int getNr(int Nk);
 void Xor(uint8_t* input, uint8_t* val, int length);
