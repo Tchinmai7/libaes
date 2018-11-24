@@ -32,7 +32,8 @@ void free_aes_params(aes_params_t* params)
 aes_params_t* init_aes_params()
 {
 	// set sane defaults.
-	aes_params_t* param = malloc(sizeof(aes_params_t));
+	// aes_params_t* param = malloc(sizeof(aes_params_t));
+	aes_params_t* param = calloc(1, sizeof(aes_params_t));
     if (param == NULL) {
         // Fatal error!. Malloc failed, crash.
         return NULL;

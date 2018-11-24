@@ -48,9 +48,10 @@ int main(int argc, char* argv[])
     
     uint8_t* input = NULL;
     printf("Input size is %ld\n", input_size);
-    input = malloc(input_size);
+    //input = malloc(input_size);
+    input = calloc(input_size, 1);
     if (input == NULL) {
-        printf("fatal error, malloc failure");
+        printf("fatal error, Calloc failure");
         exit(-1);
     }
 

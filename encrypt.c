@@ -180,27 +180,32 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* ip, uint8_t** output, int ip_l
     switch(aes_params->aes_mode) {
         case AES_MODE_CBC:
             // We know that the length has to be input_length + 16 (for the IV)
-            *output = malloc(input_length + 16);
+            //*output = malloc(input_length + 16);
+            *output = calloc(input_length + 16, 1);
             output_length = aes_cbc_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_ECB:
             // We know that the length has to be input_length
-            *output = malloc(input_length);
+            // *output = malloc(input_length);
+            *output = calloc(input_length, 1);
             output_length = aes_ecb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_CTR:
             // We know that the length has to be input_length + 16 (for the IV)
-            *output = malloc(input_length + 16);
+            // *output = malloc(input_length + 16);
+            *output = calloc(input_length + 16, 1);
             output_length = aes_ctr_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_OFB:
             // We know that the length has to be input_length + 16 (for the IV)
-            *output = malloc(input_length + 16);
+            // *output = malloc(input_length + 16);
+            *output = calloc(input_length + 16, 1);
             output_length = aes_ofb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_CFB:
             // We know that the length has to be input_length + 16 (for the IV)
-            *output = malloc(input_length + 16);
+            // *output = malloc(input_length + 16);
+            *output = calloc(input_length + 16, 1);
             output_length = aes_cfb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         default:
