@@ -219,5 +219,7 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* ip, uint8_t** output, int ip_l
     }
 
     free(input);
+    // Per MEM01-C, set variables to null after free.
+    input = NULL;
     return output_length;
 }

@@ -39,6 +39,8 @@ void test_encryption(aes_key_size_t key_size, uint8_t Nk, uint8_t* input, size_t
     free(output);
     free(plain);
     free_aes_params(params);
+    output = NULL;
+    plain = NULL;
 }
 
 int main(int argc, char* argv[])

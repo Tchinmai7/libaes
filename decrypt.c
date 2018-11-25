@@ -216,6 +216,7 @@ size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int i
     if (strip_padding_bytes) {
         output_length = strip_padding(padded_op, output, output_length);
         free(padded_op);
+        padded_op = NULL;
         return output_length;
     } else {
         return output_length;

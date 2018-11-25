@@ -81,6 +81,7 @@ void free_aes_params(aes_params_t* params)
 {
 	free_secure_random_key(&params->key, &params->key_area, params->key_size);
 	free(params);
+    params = NULL;
 }
 
 aes_params_t* init_aes_params()
