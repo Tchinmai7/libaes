@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <assert.h>
+
 #include "utils.h"
 
 void print_word(uint8_t* word, int len) 
@@ -95,6 +97,7 @@ void get_random_bytes(uint8_t* result, size_t size)
     // This is the recommended method of fetchig random bytes. It is safe to read upto 32mb of data
     // in one shot from /dev/urandom
 	f = fopen("/dev/urandom", "r");
-	fread(result, size, 1, f);
+	size_t val = fread(result, size, 1, f);
+    assert(val == 1);
 	fclose(f);
 }
