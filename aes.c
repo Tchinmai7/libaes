@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <sys/resource.h>
+#include <unistd.h>
 #include "aes.h"
 #include "utils.h"
 //TODO: @Sandhya: Replace this with the derivation
@@ -23,9 +26,60 @@ uint8_t sbox[16][16] =  {
  {0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16}
 };
 
+// fills memory area and fills the key into `key`
+void generate_secure_random_key(uint8_t** key, uint8_t** secret_buf, size_t keysize)
+{
+    struct rlimit limit;
+    limit.rlim_cur = 0;
+    limit.rlim_max = 0;
+    if (setrlimit(RLIMIT_CORE, &limit) != 0) {
+        printf("ERROR: Unable to set core size to 0. Exiting\n");
+        exit(-1);
+    }
+
+    long pagesize = sysconf(_SC_PAGESIZE);
+    if (pagesize == -1) {
+        printf("ERROR: Page size is reported as -1. Exiting\n");
+        exit(-1);
+    }
+    
+    *secret_buf = calloc(keysize+1+pagesize, 1);
+    if (!*secret_buf) {
+        printf("ERROR: Malloc failure. Exiting\n");
+        exit(-1);
+    }
+    
+    /* mlock() may require that address be a multiple of PAGESIZE */
+    *key = (uint8_t *)((((intptr_t)secret_buf + pagesize - 1) / pagesize) * pagesize);
+
+    if (mlock(*key, keysize+1) != 0) {
+        printf("ERROR: Mlock failure. Exiting\n");
+        exit(-1);
+    }
+    get_random_bytes(*key, keysize);    
+    return;
+}
+
+void free_secure_random_key(uint8_t** key, uint8_t** secret_buf, size_t keysize)
+{
+    long pagesize = sysconf(_SC_PAGESIZE);
+    if (pagesize == -1) {
+        printf("ERROR: Page size is reported as -1. Exiting\n");
+        exit(-1);
+    }
+    if (munlock(*key, keysize+1) != 0) {
+        printf("ERROR: Mlock failure. Exiting\n");
+        exit(-1);
+    }
+    *key = NULL;
+    memset(*secret_buf, '\0', keysize+1+pagesize);
+    free(*secret_buf);
+    *secret_buf = NULL;
+}
+
 void free_aes_params(aes_params_t* params)
 {
-	free(params->key);
+	free_secure_random_key(&params->key, &params->key_area, params->key_size);
 	free(params);
 }
 
@@ -41,19 +95,15 @@ aes_params_t* init_aes_params()
 	param->aes_mode = AES_MODE_CTR;
 	param->Nk = AES_128_BIT/4;
 	param->key = NULL;
+    param->key_area = NULL;
 	return param;
 }
 
-void set_aes_key(aes_params_t* param, aes_key_size_t key_size, uint8_t* key)
+void set_aes_key(aes_params_t* param, aes_key_size_t key_size)
 {
 	param->key_size = key_size;
 	param->Nk = key_size/4;
-	param->key = calloc(key_size, 1);
-    if (param->key == NULL) {
-        // Fatal Error, Malloc failure
-        exit(-1);
-    }
-	memcpy(param->key, key, key_size);
+    generate_secure_random_key(&param->key, &param->key_area, key_size);
 }
 
 void set_aes_mode(aes_params_t* param, aes_modes_t mode)
