@@ -2,6 +2,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 #include <stdint.h>
+#include <assert.h>
 #define BLOCK_SIZE 16
 #define WORD_SIZE 4
 int getNr(int Nk);
@@ -14,4 +15,5 @@ void dump_matrix(uint8_t inp[WORD_SIZE][WORD_SIZE]);
 void print_word(uint8_t* word, int len); 
 uint8_t multiply_by_two(uint8_t val);
 void get_random_bytes(uint8_t* result, size_t size);
+int valid_pointer(void *p);
 #endif

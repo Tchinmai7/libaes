@@ -32,6 +32,7 @@ uint8_t get_inv_sbox_value(uint8_t val)
 
 void inv_sub_bytes(uint8_t (*in)[WORD_SIZE]) 
 {
+    assert(valid_pointer(in) != 0);
     for (int i = 0; i < WORD_SIZE; i++) {
         for (int j = 0; j < WORD_SIZE; j++) {
             in[i][j] = get_inv_sbox_value(in[i][j]);
@@ -41,6 +42,7 @@ void inv_sub_bytes(uint8_t (*in)[WORD_SIZE])
 
 void inv_shift_rows(uint8_t (*in)[WORD_SIZE]) 
 {
+    assert(valid_pointer(in) != 0);
     uint8_t temp = {0x00};
     temp = in[1][0];
     in[1][0] = in[1][3];
@@ -91,6 +93,7 @@ uint8_t multiply_by_0e(uint8_t val)
 
 void inv_mix_columns(uint8_t (*in)[WORD_SIZE])
 {
+    assert(valid_pointer(in) != 0);
     uint8_t old_col[WORD_SIZE] = {0x00};
     for (int i = 0; i < WORD_SIZE; i++) {
         old_col[0] = in[0][i];
@@ -111,6 +114,9 @@ void inv_mix_columns(uint8_t (*in)[WORD_SIZE])
 
 void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
 {
+    assert(valid_pointer(in) != 0);
+    assert(valid_pointer(out) != 0);
+    assert(valid_pointer(w) != 0);
     //Initialize with double braces to ensure that all objects are 0'd
     uint8_t state[WORD_SIZE][WORD_SIZE] = {{0x00}};
     uint8_t temp[BLOCK_SIZE] = {0x00}; 

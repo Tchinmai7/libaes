@@ -27,6 +27,7 @@ uint8_t sbox[BLOCK_SIZE][BLOCK_SIZE] =  {
 };
 
 // fills memory area and fills the key into `key`
+// complies with MEM06-C to ensure key is not written to disk
 void generate_secure_random_key(uint8_t** key, uint8_t** secret_buf, size_t keysize)
 {
     struct rlimit limit;
@@ -81,6 +82,7 @@ void free_secure_random_key(uint8_t** key, uint8_t** secret_buf, size_t keysize)
 
 void free_aes_params(aes_params_t* params)
 {
+    assert(valid_pointer(params) != 0);
 	free_secure_random_key(&params->key, &params->key_area, params->key_size);
 	free(params);
     params = NULL;
@@ -104,6 +106,7 @@ aes_params_t* init_aes_params()
 
 void set_aes_key(aes_params_t* param, aes_key_size_t key_size)
 {
+    assert(valid_pointer(param) != 0);
 	param->key_size = key_size;
 	param->Nk = key_size/WORD_SIZE;
     generate_secure_random_key(&param->key, &param->key_area, key_size);
@@ -111,6 +114,7 @@ void set_aes_key(aes_params_t* param, aes_key_size_t key_size)
 
 void set_aes_mode(aes_params_t* param, aes_modes_t mode)
 {
+    assert(valid_pointer(param) != 0);
 	param->aes_mode = mode;
 }
 
@@ -124,6 +128,7 @@ uint8_t get_sbox_value(uint8_t val)
 
 void sub_word(uint8_t* input) 
 {
+    assert(valid_pointer(input) != 0);
     uint8_t temp[WORD_SIZE];
     for (int i = 0; i < WORD_SIZE; i++) {
         temp[i] = get_sbox_value(input[i]);
@@ -133,6 +138,7 @@ void sub_word(uint8_t* input)
 
 void rot_word(uint8_t* input) 
 {
+    assert(valid_pointer(input) != 0);
     uint8_t temp[WORD_SIZE] = {0x00};
     temp[0] = input[1];
     temp[1] = input[2];
@@ -162,8 +168,10 @@ uint8_t getRcon(int idx)
 }
 
 //TODO: Rename w to expanded_key
-void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
+void expand_key(uint8_t* key, uint8_t Nk, uint8_t* expanded_key)
 {
+    assert(valid_pointer(key) != 0);
+    assert(valid_pointer(expanded_key) != 0);
     uint8_t i = 0;
     uint8_t temp[WORD_SIZE] = {0x00};
     uint8_t rcon_key[WORD_SIZE] = {0x00};
@@ -180,14 +188,14 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
         temp [1] = key[i + 1];
         temp [2] = key[i + 2];
         temp [3] = key[i + 3];
-        memcpy(w + i , temp, WORD_SIZE);
+        memcpy(expanded_key + i , temp, WORD_SIZE);
         i += WORD_SIZE;
     }
 
     i = Nk;
     while (i < Nb * (Nr + 1)) {
             int j = i * WORD_SIZE;
-            memcpy(temp, w + j - WORD_SIZE ,WORD_SIZE);
+            memcpy(temp, expanded_key + j - WORD_SIZE ,WORD_SIZE);
             if (i % Nk == 0) { 
                 rot_word(temp);
                 sub_word(temp);
@@ -197,13 +205,14 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
             else if ((Nk > 6) &&  (i % Nk == WORD_SIZE)) {
                 sub_word(temp);
             }
-            xor_with_return(w + j - Nk_bytes, temp, w + j, WORD_SIZE);
+            xor_with_return(expanded_key + j - Nk_bytes, temp, expanded_key + j, WORD_SIZE);
             i = i + 1;
     }
 }
 
 void sub_bytes(uint8_t (*in)[WORD_SIZE]) 
 {
+    assert(valid_pointer(in) != 0);
     for (int i = 0; i < WORD_SIZE; i++) {
         for (int j = 0; j < WORD_SIZE; j++) {
             in[i][j] = get_sbox_value(in[i][j]);
@@ -213,6 +222,7 @@ void sub_bytes(uint8_t (*in)[WORD_SIZE])
 
 void shift_rows(uint8_t (*in)[WORD_SIZE]) 
 {
+    assert(valid_pointer(in) != 0);
     uint8_t temp = 0x00;
     temp = in[1][0];
     in[1][0] = in[1][1];
@@ -239,6 +249,7 @@ void shift_rows(uint8_t (*in)[WORD_SIZE])
 
 void mix_columns(uint8_t (*in)[WORD_SIZE]) 
 {
+    assert(valid_pointer(in) != 0);
     uint8_t old_col[WORD_SIZE] = {0x00};
     for (int i = 0; i < WORD_SIZE; i++) {
         old_col[0] = in[0][i];
@@ -254,6 +265,9 @@ void mix_columns(uint8_t (*in)[WORD_SIZE])
 
 void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
 {
+    assert(valid_pointer(in) != 0);
+    assert(valid_pointer(out) != 0);
+    assert(valid_pointer(w) != 0);
     uint8_t state[WORD_SIZE][WORD_SIZE] = {{0x00}};
     uint8_t temp[BLOCK_SIZE] = {0x00}; 
     memcpy(temp, w, BLOCK_SIZE);

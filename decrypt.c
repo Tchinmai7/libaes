@@ -150,6 +150,8 @@ size_t aes_cbc_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
 
 size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int input_length)
 {
+    assert(valid_pointer(aes_params) != 0);
+    assert(valid_pointer(input) != 0);
     int Nr = getNr(aes_params->Nk);
     // the last *4 is to convert words to bytes
     int len = 4 * (Nr + 1) * 4;

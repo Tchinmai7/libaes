@@ -6,6 +6,7 @@
 
 size_t add_padding(uint8_t* messagebuf, uint8_t **output_buf, int input_msglen)
 {
+    assert(valid_pointer(messagebuf) != 0);
     size_t bytestopad = BLOCK_SIZE;
 
     if ((input_msglen % BLOCK_SIZE) == 0) {
@@ -26,6 +27,7 @@ size_t add_padding(uint8_t* messagebuf, uint8_t **output_buf, int input_msglen)
 
 size_t strip_padding(uint8_t* padbuf,  uint8_t **outputbuf, int buflen)
 {
+    assert(valid_pointer(padbuf) != 0);
     uint8_t lastbyte = padbuf[buflen - 1];
     *outputbuf = calloc(buflen - lastbyte + 1, 1); // 1 is to store the Null byte
     // Adher to ERR33-C - Handle standard library errors
