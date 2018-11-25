@@ -7,7 +7,7 @@
 #include "aes.h"
 #include "utils.h"
 //TODO: @Sandhya: Replace this with the derivation
-uint8_t sbox[WORD_SIZE][WORD_SIZE] =  {
+uint8_t sbox[BLOCK_SIZE][BLOCK_SIZE] =  {
  {0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76},
  {0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0},
  {0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15},
@@ -96,7 +96,7 @@ aes_params_t* init_aes_params()
     }
 	param->key_size = AES_128_BIT;
 	param->aes_mode = AES_MODE_CTR;
-	param->Nk = AES_128_BIT/4;
+	param->Nk = AES_128_BIT/WORD_SIZE;
 	param->key = NULL;
     param->key_area = NULL;
 	return param;
@@ -105,7 +105,7 @@ aes_params_t* init_aes_params()
 void set_aes_key(aes_params_t* param, aes_key_size_t key_size)
 {
 	param->key_size = key_size;
-	param->Nk = key_size/4;
+	param->Nk = key_size/WORD_SIZE;
     generate_secure_random_key(&param->key, &param->key_area, key_size);
 }
 
@@ -124,21 +124,21 @@ uint8_t get_sbox_value(uint8_t val)
 
 void sub_word(uint8_t* input) 
 {
-    uint8_t temp[4];
-    for (int i = 0; i < 4; i++) {
+    uint8_t temp[WORD_SIZE];
+    for (int i = 0; i < WORD_SIZE; i++) {
         temp[i] = get_sbox_value(input[i]);
     }
-    memcpy(input, temp, 4);
+    memcpy(input, temp, WORD_SIZE);
 }
 
 void rot_word(uint8_t* input) 
 {
-    uint8_t temp[4] = {0x00};
+    uint8_t temp[WORD_SIZE] = {0x00};
     temp[0] = input[1];
     temp[1] = input[2];
     temp[2] = input[3];
     temp[3] = input[0];
-    memcpy(input, temp, 4);
+    memcpy(input, temp, WORD_SIZE);
 }
 
 
@@ -165,9 +165,9 @@ uint8_t getRcon(int idx)
 void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
 {
     uint8_t i = 0;
-    uint8_t temp[4] = {0x00};
-    uint8_t rcon_key[4] = {0x00};
-    int Nk_bytes = Nk * 4;
+    uint8_t temp[WORD_SIZE] = {0x00};
+    uint8_t rcon_key[WORD_SIZE] = {0x00};
+    int Nk_bytes = Nk * WORD_SIZE;
     int Nr = getNr(Nk);
 
     if (Nr < 0 ) {
@@ -175,43 +175,43 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
         return;
     }
 
-    while ( i <  4 * Nk ) {
+    while ( i <  WORD_SIZE * Nk ) {
         temp [0] = key[i];
         temp [1] = key[i + 1];
         temp [2] = key[i + 2];
         temp [3] = key[i + 3];
-        memcpy(w + i , temp, 4);
-        i += 4;
+        memcpy(w + i , temp, WORD_SIZE);
+        i += WORD_SIZE;
     }
 
     i = Nk;
     while (i < Nb * (Nr + 1)) {
-            int j = i * 4;
-            memcpy(temp, w + j - 4 ,4);
+            int j = i * WORD_SIZE;
+            memcpy(temp, w + j - WORD_SIZE ,WORD_SIZE);
             if (i % Nk == 0) { 
                 rot_word(temp);
                 sub_word(temp);
                 rcon_key[0] = getRcon(i/Nk);
-                Xor(temp, rcon_key, 4);
+                Xor(temp, rcon_key, WORD_SIZE);
             }
-            else if ((Nk > 6) &&  (i % Nk == 4)) {
+            else if ((Nk > 6) &&  (i % Nk == WORD_SIZE)) {
                 sub_word(temp);
             }
-            xor_with_return(w + j - Nk_bytes, temp, w + j, 4);
+            xor_with_return(w + j - Nk_bytes, temp, w + j, WORD_SIZE);
             i = i + 1;
     }
 }
 
-void sub_bytes(uint8_t (*in)[4]) 
+void sub_bytes(uint8_t (*in)[WORD_SIZE]) 
 {
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
+    for (int i = 0; i < WORD_SIZE; i++) {
+        for (int j = 0; j < WORD_SIZE; j++) {
             in[i][j] = get_sbox_value(in[i][j]);
         }
     }
 }
 
-void shift_rows(uint8_t (*in)[4]) 
+void shift_rows(uint8_t (*in)[WORD_SIZE]) 
 {
     uint8_t temp = 0x00;
     temp = in[1][0];
@@ -237,10 +237,10 @@ void shift_rows(uint8_t (*in)[4])
     in[3][1] = temp;
 }
 
-void mix_columns(uint8_t (*in)[4]) 
+void mix_columns(uint8_t (*in)[WORD_SIZE]) 
 {
-    uint8_t old_col[4] = {0x00};
-    for (int i = 0; i < 4; i++) {
+    uint8_t old_col[WORD_SIZE] = {0x00};
+    for (int i = 0; i < WORD_SIZE; i++) {
         old_col[0] = in[0][i];
         old_col[1] = in[1][i];
         old_col[2] = in[2][i];
@@ -254,10 +254,10 @@ void mix_columns(uint8_t (*in)[4])
 
 void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
 {
-    uint8_t state[4][4] = {{0x00}};
-    uint8_t temp[WORD_SIZE] = {0x00}; 
-    memcpy(temp, w, WORD_SIZE);
-    uint8_t roundKey[4][4] = {{0x00}};
+    uint8_t state[WORD_SIZE][WORD_SIZE] = {{0x00}};
+    uint8_t temp[BLOCK_SIZE] = {0x00}; 
+    memcpy(temp, w, BLOCK_SIZE);
+    uint8_t roundKey[WORD_SIZE][WORD_SIZE] = {{0x00}};
     convert_to_matrix(in, state);
     convert_to_matrix(temp, roundKey);
     add_round_key(state, roundKey);
@@ -270,13 +270,13 @@ void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
         sub_bytes(state);
         shift_rows(state);
         mix_columns(state);
-        memcpy(temp, w + (round * 4 * 4), WORD_SIZE);
+        memcpy(temp, w + (round * WORD_SIZE * WORD_SIZE), BLOCK_SIZE);
         convert_to_matrix(temp, roundKey);
         add_round_key(state, roundKey);
     }
     sub_bytes(state);
     shift_rows(state);
-    memcpy(temp, w + (Nr * 4 * 4), WORD_SIZE);
+    memcpy(temp, w + (Nr * WORD_SIZE * WORD_SIZE), BLOCK_SIZE);
     convert_to_matrix(temp, roundKey);
     add_round_key(state, roundKey);
     convert_to_array(state, out);

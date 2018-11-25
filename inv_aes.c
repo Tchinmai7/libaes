@@ -3,7 +3,7 @@
 #include "inv_aes.h"
 #include "aes.h"
 #include "utils.h"
-uint8_t inv_sbox[WORD_SIZE][WORD_SIZE] = {
+uint8_t inv_sbox[BLOCK_SIZE][BLOCK_SIZE] = {
     {0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb},
     {0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb}, 
     {0x54, 0x7b, 0x94, 0x32, 0xa6, 0xc2, 0x23, 0x3d, 0xee, 0x4c, 0x95, 0x0b, 0x42, 0xfa, 0xc3, 0x4e},
@@ -30,16 +30,16 @@ uint8_t get_inv_sbox_value(uint8_t val)
     return inv_sbox[high][low];
 }
 
-void inv_sub_bytes(uint8_t (*in)[4]) 
+void inv_sub_bytes(uint8_t (*in)[WORD_SIZE]) 
 {
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
+    for (int i = 0; i < WORD_SIZE; i++) {
+        for (int j = 0; j < WORD_SIZE; j++) {
             in[i][j] = get_inv_sbox_value(in[i][j]);
         }
     }
 }
 
-void inv_shift_rows(uint8_t (*in)[4]) 
+void inv_shift_rows(uint8_t (*in)[WORD_SIZE]) 
 {
     uint8_t temp = {0x00};
     temp = in[1][0];
@@ -89,10 +89,10 @@ uint8_t multiply_by_0e(uint8_t val)
     return multiply_by_two((multiply_by_two(multiply_by_two(val) ^ val) ^ val));
 }
 
-void inv_mix_columns(uint8_t (*in)[4])
+void inv_mix_columns(uint8_t (*in)[WORD_SIZE])
 {
-    uint8_t old_col[4] = {0x00};
-    for (int i = 0; i < 4; i++) {
+    uint8_t old_col[WORD_SIZE] = {0x00};
+    for (int i = 0; i < WORD_SIZE; i++) {
         old_col[0] = in[0][i];
         old_col[1] = in[1][i];
         old_col[2] = in[2][i];
@@ -112,12 +112,12 @@ void inv_mix_columns(uint8_t (*in)[4])
 void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
 {
     //Initialize with double braces to ensure that all objects are 0'd
-    uint8_t state[4][4] = {{0x00}};
-    uint8_t temp[WORD_SIZE] = {0x00}; 
+    uint8_t state[WORD_SIZE][WORD_SIZE] = {{0x00}};
+    uint8_t temp[BLOCK_SIZE] = {0x00}; 
     convert_to_matrix(in, state);
     int Nr = getNr(Nk);
-    memcpy(temp, w + (Nr * 4 * 4), WORD_SIZE);
-    uint8_t roundKey[4][4] = {{0x00}};
+    memcpy(temp, w + (Nr * WORD_SIZE * WORD_SIZE), BLOCK_SIZE);
+    uint8_t roundKey[WORD_SIZE][WORD_SIZE] = {{0x00}};
     convert_to_matrix(temp, roundKey);
     
     add_round_key(state, roundKey);
@@ -127,7 +127,7 @@ void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
     for (round = Nr - 1; round >= 1; round--) {
         inv_shift_rows(state);
         inv_sub_bytes(state);
-        memcpy(temp, w + (round * 4 * 4), WORD_SIZE);
+        memcpy(temp, w + (round * WORD_SIZE * WORD_SIZE), BLOCK_SIZE);
         convert_to_matrix(temp, roundKey);
         add_round_key(state, roundKey);
         inv_mix_columns(state); 
@@ -135,7 +135,7 @@ void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
     }
     inv_shift_rows(state);
     inv_sub_bytes(state);
-    memcpy(temp, w, WORD_SIZE);
+    memcpy(temp, w, BLOCK_SIZE);
     convert_to_matrix(temp, roundKey);
     add_round_key(state, roundKey);
     convert_to_array(state, out);

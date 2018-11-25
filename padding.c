@@ -6,21 +6,21 @@
 
 size_t add_padding(uint8_t* messagebuf, uint8_t **output_buf, int input_msglen)
 {
-    size_t bytestopad = WORD_SIZE;
+    size_t bytestopad = BLOCK_SIZE;
 
-    if ((input_msglen % WORD_SIZE) == 0) {
-        bytestopad = WORD_SIZE;
+    if ((input_msglen % BLOCK_SIZE) == 0) {
+        bytestopad = BLOCK_SIZE;
     } else {
-        bytestopad = WORD_SIZE - (input_msglen % WORD_SIZE);
+        bytestopad = BLOCK_SIZE - (input_msglen % BLOCK_SIZE);
     }
 
-    *output_buf = calloc(input_msglen + WORD_SIZE, 1);
+    *output_buf = calloc(input_msglen + BLOCK_SIZE, 1);
     if (NULL == output_buf) {
         printf("FATAL ERROR: Calloc failure\n");
         exit(-1);
     }
     memcpy(*output_buf, messagebuf, input_msglen);
-    memset(*output_buf + input_msglen, bytestopad, WORD_SIZE);
+    memset(*output_buf + input_msglen, bytestopad, BLOCK_SIZE);
     return input_msglen + bytestopad;
 }
 
@@ -42,7 +42,7 @@ int main()
 {
     uint8_t message[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
     uint8_t* padded_msg = NULL;
-    uint8_t padlen = addpadding(message, &padded_msg,  WORD_SIZE);
+    uint8_t padlen = addpadding(message, &padded_msg,  BLOCK_SIZE);
     print_word(padded_msg, padlen);
     uint8_t* stripped_msg =  NULL;
     uint8_t orig_len = strippadding(padded_msg, &stripped_msg, padlen);

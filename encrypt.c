@@ -8,19 +8,19 @@
 
 size_t aes_ctr_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
-    int num_blocks = input_length / WORD_SIZE;
-    int last_block_size = input_length  % WORD_SIZE;
-    uint8_t iv[WORD_SIZE] = {0x00};
+    int num_blocks = input_length / BLOCK_SIZE;
+    int last_block_size = input_length  % BLOCK_SIZE;
+    uint8_t iv[BLOCK_SIZE] = {0x00};
     uint64_t ctr = 0;
     // Get a random byte string of 128 bits
     // Use the last 64bits as the ctr
-    get_random_bytes(iv, WORD_SIZE);
+    get_random_bytes(iv, BLOCK_SIZE);
     memcpy(&ctr, iv + 8 , 8);
-    uint8_t block[WORD_SIZE] = {0x00};
-    uint8_t temp_op[WORD_SIZE] = {0x00};
+    uint8_t block[BLOCK_SIZE] = {0x00};
+    uint8_t temp_op[BLOCK_SIZE] = {0x00};
 
-    // IV is in the first WORD_SIZE bytes of the cipher text
-    memcpy(*output, iv, WORD_SIZE);
+    // IV is in the first BLOCK_SIZE bytes of the cipher text
+    memcpy(*output, iv, BLOCK_SIZE);
     //to account for the IV that's appended.
     size_t output_length = 1;
     for (int i = 0; i < num_blocks; i++) {
@@ -30,67 +30,67 @@ size_t aes_ctr_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
         ctr ++;
         // Copy the ctr to the last 8 bytes of IV
         memcpy(iv+8, &ctr, 8);
-        memcpy(block, input + (i * WORD_SIZE), WORD_SIZE);
+        memcpy(block, input + (i * BLOCK_SIZE), BLOCK_SIZE);
         // Xor the encrypted val with the plain text
-        Xor(temp_op, block, WORD_SIZE);
-        memcpy(*output + (i * WORD_SIZE) + WORD_SIZE, temp_op, WORD_SIZE);
+        Xor(temp_op, block, BLOCK_SIZE);
+        memcpy(*output + (i * BLOCK_SIZE) + BLOCK_SIZE, temp_op, BLOCK_SIZE);
         output_length ++;
     }
     // Deal with the last block here
     cipher(iv, temp_op, expanded_key, Nk);
-    memcpy(block, input + (num_blocks * WORD_SIZE), last_block_size);
+    memcpy(block, input + (num_blocks * BLOCK_SIZE), last_block_size);
     // Xor the encrypted val with the plain text
     Xor(temp_op, block, last_block_size);
-    memcpy(*output + (num_blocks * WORD_SIZE) + WORD_SIZE, temp_op, last_block_size);
-    return (output_length * WORD_SIZE) + last_block_size;
+    memcpy(*output + (num_blocks * BLOCK_SIZE) + BLOCK_SIZE, temp_op, last_block_size);
+    return (output_length * BLOCK_SIZE) + last_block_size;
 }
 
 size_t aes_ofb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
-    int num_blocks = input_length / WORD_SIZE;
-    int last_block_size = input_length % WORD_SIZE;
-    uint8_t iv[WORD_SIZE] = {0x00};
-    get_random_bytes(iv, WORD_SIZE);
-    uint8_t block[WORD_SIZE] = {0x00};
-    uint8_t temp_op[WORD_SIZE] = {0x00};
+    int num_blocks = input_length / BLOCK_SIZE;
+    int last_block_size = input_length % BLOCK_SIZE;
+    uint8_t iv[BLOCK_SIZE] = {0x00};
+    get_random_bytes(iv, BLOCK_SIZE);
+    uint8_t block[BLOCK_SIZE] = {0x00};
+    uint8_t temp_op[BLOCK_SIZE] = {0x00};
 
     // IV is in the first 16 bytes of the cipher text
-    memcpy(*output, iv, WORD_SIZE);
+    memcpy(*output, iv, BLOCK_SIZE);
     //to account for the IV that's appended.
     size_t output_length = 1;
     for (int i = 0; i < num_blocks; i++) {
         // First encrypt the IV
         cipher(iv, temp_op, expanded_key, Nk);
         // Use the encrypted value as the IV for next
-        memcpy(iv, temp_op,WORD_SIZE);
-        memcpy(block, input + (i * WORD_SIZE), WORD_SIZE);
+        memcpy(iv, temp_op,BLOCK_SIZE);
+        memcpy(block, input + (i * BLOCK_SIZE), BLOCK_SIZE);
         // Xor the encrypted val with the plain text
-        Xor(temp_op, block, WORD_SIZE);
-        memcpy(*output + (i * WORD_SIZE) + WORD_SIZE, temp_op, WORD_SIZE);
+        Xor(temp_op, block, BLOCK_SIZE);
+        memcpy(*output + (i * BLOCK_SIZE) + BLOCK_SIZE, temp_op, BLOCK_SIZE);
         output_length ++;
     }
     // Process the last incomplete block here
     cipher(iv, temp_op, expanded_key, Nk);
-    memcpy(iv, temp_op, WORD_SIZE);
-    memcpy(block, input + (num_blocks * WORD_SIZE), last_block_size);
+    memcpy(iv, temp_op, BLOCK_SIZE);
+    memcpy(block, input + (num_blocks * BLOCK_SIZE), last_block_size);
     // Xor the encrypted val with the plain text
     Xor(temp_op, block, last_block_size);
-    memcpy(*output + (num_blocks * WORD_SIZE) + WORD_SIZE, temp_op, last_block_size);
+    memcpy(*output + (num_blocks * BLOCK_SIZE) + BLOCK_SIZE, temp_op, last_block_size);
     
-    return (output_length * WORD_SIZE) + last_block_size;
+    return (output_length * BLOCK_SIZE) + last_block_size;
 }
 
 size_t aes_cfb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
-    uint8_t iv[WORD_SIZE] = {0x00};
-    get_random_bytes(iv, WORD_SIZE);
-    int num_blocks = input_length / WORD_SIZE;
-    int last_block_size = input_length % WORD_SIZE;
-    uint8_t block[WORD_SIZE] = {0x00};
-    uint8_t temp_op[WORD_SIZE] = {0x00};
+    uint8_t iv[BLOCK_SIZE] = {0x00};
+    get_random_bytes(iv, BLOCK_SIZE);
+    int num_blocks = input_length / BLOCK_SIZE;
+    int last_block_size = input_length % BLOCK_SIZE;
+    uint8_t block[BLOCK_SIZE] = {0x00};
+    uint8_t temp_op[BLOCK_SIZE] = {0x00};
 
     // IV is in the first 16 bytes of the cipher text
-    memcpy(*output, iv, WORD_SIZE);
+    memcpy(*output, iv, BLOCK_SIZE);
     //to account for the IV that's appended.
     size_t output_length = 1;
     for (int i = 0; i < num_blocks; i++) {
@@ -98,60 +98,60 @@ size_t aes_cfb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
         cipher(iv, temp_op, expanded_key, Nk);
         // Then Xor with plain text
         // Use the result as the IV for next
-        memcpy(block, input + (i * WORD_SIZE), WORD_SIZE);
-        Xor(temp_op, block, WORD_SIZE);
-        memcpy(*output + (i * WORD_SIZE) + WORD_SIZE, temp_op, WORD_SIZE);
-        memcpy(iv, temp_op, WORD_SIZE);
+        memcpy(block, input + (i * BLOCK_SIZE), BLOCK_SIZE);
+        Xor(temp_op, block, BLOCK_SIZE);
+        memcpy(*output + (i * BLOCK_SIZE) + BLOCK_SIZE, temp_op, BLOCK_SIZE);
+        memcpy(iv, temp_op, BLOCK_SIZE);
         output_length ++;
     }
     // Handle the last incomplete block here
     cipher(iv, temp_op, expanded_key, Nk);
     // Then Xor with `last_block_size` bytes of plain text
-    memcpy(block, input + (num_blocks * WORD_SIZE), last_block_size);
+    memcpy(block, input + (num_blocks * BLOCK_SIZE), last_block_size);
     Xor(temp_op, block, last_block_size);
-    memcpy(*output + (num_blocks * WORD_SIZE) + WORD_SIZE, temp_op, last_block_size);
+    memcpy(*output + (num_blocks * BLOCK_SIZE) + BLOCK_SIZE, temp_op, last_block_size);
     
-    return (output_length * WORD_SIZE) + last_block_size;
+    return (output_length * BLOCK_SIZE) + last_block_size;
 }
 
 size_t aes_ecb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
-    int num_blocks = input_length / WORD_SIZE;
-    uint8_t block[WORD_SIZE] = {0x00};
-    uint8_t temp_op[WORD_SIZE] = {0x00};
+    int num_blocks = input_length / BLOCK_SIZE;
+    uint8_t block[BLOCK_SIZE] = {0x00};
+    uint8_t temp_op[BLOCK_SIZE] = {0x00};
 
     size_t output_length = 0;
     for (int i = 0; i < num_blocks; i++) {
-        memcpy(block, input + (i * WORD_SIZE), WORD_SIZE);
+        memcpy(block, input + (i * BLOCK_SIZE), BLOCK_SIZE);
         cipher(block, temp_op, expanded_key, Nk);
-        memcpy(*output + (i * WORD_SIZE), temp_op, WORD_SIZE);
+        memcpy(*output + (i * BLOCK_SIZE), temp_op, BLOCK_SIZE);
         output_length++;
     }
-    return output_length * WORD_SIZE;
+    return output_length * BLOCK_SIZE;
 }
 
 size_t aes_cbc_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
-    uint8_t iv[WORD_SIZE] = {0x00};
-    get_random_bytes(iv, WORD_SIZE);
-    int num_blocks = input_length / WORD_SIZE;
-    uint8_t block[WORD_SIZE] = {0x00};
-    uint8_t temp_op[WORD_SIZE] = {0x00};
+    uint8_t iv[BLOCK_SIZE] = {0x00};
+    get_random_bytes(iv, BLOCK_SIZE);
+    int num_blocks = input_length / BLOCK_SIZE;
+    uint8_t block[BLOCK_SIZE] = {0x00};
+    uint8_t temp_op[BLOCK_SIZE] = {0x00};
 
     // IV is in the first 16 bytes of the cipher text
-    memcpy(*output, iv, WORD_SIZE);
+    memcpy(*output, iv, BLOCK_SIZE);
     //to account for the IV that's appended.
     size_t output_length = 1;
     for (int i = 0; i < num_blocks; i++) {
-        memcpy(block, input + (i * WORD_SIZE), WORD_SIZE);
-        Xor(block, iv, WORD_SIZE);
+        memcpy(block, input + (i * BLOCK_SIZE), BLOCK_SIZE);
+        Xor(block, iv, BLOCK_SIZE);
         cipher(block, temp_op, expanded_key, Nk);
-        // a +WORD_SIZE is needed because of the IV
-        memcpy(*output + ( i * WORD_SIZE) + WORD_SIZE, temp_op, WORD_SIZE);
-        memcpy(iv, temp_op, WORD_SIZE);
+        // a +BLOCK_SIZE is needed because of the IV
+        memcpy(*output + ( i * BLOCK_SIZE) + BLOCK_SIZE, temp_op, BLOCK_SIZE);
+        memcpy(iv, temp_op, BLOCK_SIZE);
         output_length++;
     }
-    return output_length * WORD_SIZE;
+    return output_length * BLOCK_SIZE;
 }
 
 size_t encrypt(aes_params_t* aes_params, uint8_t* ip, uint8_t** output, int ip_len)
@@ -162,14 +162,14 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* ip, uint8_t** output, int ip_l
     uint8_t expanded_key[len]; 
     expand_key(aes_params->key, aes_params->Nk, expanded_key);
     uint8_t* input = NULL; 
-    // Pad the message. We don't care if the message is a multiple of WORD_SIZE. Always Pad.
+    // Pad the message. We don't care if the message is a multiple of BLOCK_SIZE. Always Pad.
     size_t input_length = add_padding(ip, &input, ip_len);
     size_t output_length = 0;
     switch(aes_params->aes_mode) {
         case AES_MODE_CBC:
-            // We know that the length has to be input_length + WORD_SIZE (for the IV)
-            //*output = malloc(input_length + WORD_SIZE);
-            *output = calloc(input_length + WORD_SIZE, 1);
+            // We know that the length has to be input_length + BLOCK_SIZE (for the IV)
+            //*output = malloc(input_length + BLOCK_SIZE);
+            *output = calloc(input_length + BLOCK_SIZE, 1);
             if (NULL == output) {
                 printf("FATAL ERROR: Calloc failure\n");
                 exit(-1);
@@ -188,7 +188,7 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* ip, uint8_t** output, int ip_l
             break;
         case AES_MODE_CTR:
             // AES with CTR mode needs no padding.
-            *output = calloc(ip_len + WORD_SIZE, 1);
+            *output = calloc(ip_len + BLOCK_SIZE, 1);
             if (NULL == output) {
                 printf("FATAL ERROR: Calloc failure\n");
                 exit(-1);
@@ -197,7 +197,7 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* ip, uint8_t** output, int ip_l
             break;
         case AES_MODE_OFB:
             // AES with OFB mode needs no padding.
-            *output = calloc(ip_len + WORD_SIZE, 1);
+            *output = calloc(ip_len + BLOCK_SIZE, 1);
             if (NULL == output) {
                 printf("FATAL ERROR: Calloc failure\n");
                 exit(-1);
@@ -206,7 +206,7 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* ip, uint8_t** output, int ip_l
             break;
         case AES_MODE_CFB:
             // AES with CFB mode needs no padding.
-            *output = calloc(ip_len + WORD_SIZE, 1);
+            *output = calloc(ip_len + BLOCK_SIZE, 1);
             if (NULL == output) {
                 printf("FATAL ERROR: Calloc failure\n");
                 exit(-1);
