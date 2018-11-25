@@ -40,7 +40,7 @@ aes_params_t* init_aes_params()
     }
     // TODO: Maybe use 256 bit key always
 	param->key_size = AES_128_BIT;
-	param->aes_mode = AES_MODE_OFB;
+	param->aes_mode = AES_MODE_CFB;
 	param->Nk = AES_128_BIT/4;
     // TODO: If we go with secure random keys, generate keys here
     // Think about getting user input as a seed to the PRG.
