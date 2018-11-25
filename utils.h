@@ -2,6 +2,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 #include <stdint.h>
+#define WORD_SIZE 16
 int getNr(int Nk);
 void Xor(uint8_t* input, uint8_t* val, int length);
 void xor_with_return(uint8_t* input, uint8_t* val, uint8_t* ret, int length);

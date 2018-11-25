@@ -7,7 +7,7 @@
 #include "aes.h"
 #include "utils.h"
 //TODO: @Sandhya: Replace this with the derivation
-uint8_t sbox[16][16] =  {
+uint8_t sbox[WORD_SIZE][WORD_SIZE] =  {
  {0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76},
  {0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0},
  {0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15},
@@ -72,6 +72,8 @@ void free_secure_random_key(uint8_t** key, uint8_t** secret_buf, size_t keysize)
         exit(-1);
     }
     *key = NULL;
+    // per MEM03-C clear sensitive information in buffers. 
+    // params->key is inside the secret_buf, so setting that to null is sufficient.
     memset(*secret_buf, '\0', keysize+1+pagesize);
     free(*secret_buf);
     *secret_buf = NULL;
@@ -253,8 +255,8 @@ void mix_columns(uint8_t (*in)[4])
 void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
 {
     uint8_t state[4][4] = {{0x00}};
-    uint8_t temp[16] = {0x00}; 
-    memcpy(temp, w, 16);
+    uint8_t temp[WORD_SIZE] = {0x00}; 
+    memcpy(temp, w, WORD_SIZE);
     uint8_t roundKey[4][4] = {{0x00}};
     convert_to_matrix(in, state);
     convert_to_matrix(temp, roundKey);
@@ -268,13 +270,13 @@ void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
         sub_bytes(state);
         shift_rows(state);
         mix_columns(state);
-        memcpy(temp, w + (round * 4 * 4), 16);
+        memcpy(temp, w + (round * 4 * 4), WORD_SIZE);
         convert_to_matrix(temp, roundKey);
         add_round_key(state, roundKey);
     }
     sub_bytes(state);
     shift_rows(state);
-    memcpy(temp, w + (Nr * 4 * 4), 16);
+    memcpy(temp, w + (Nr * 4 * 4), WORD_SIZE);
     convert_to_matrix(temp, roundKey);
     add_round_key(state, roundKey);
     convert_to_array(state, out);
