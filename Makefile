@@ -18,4 +18,4 @@ clean:
 	rm -f *.o   
 
 valgrind:
-	valgrind --leak-check=yes --track-origins=yes ./aes_sample IsthisthereallifeIsthisjustfantasyCaughtinalandslideNoescapefromrealityOpenyoureyesLookuptotheskiesandseeI\'mjustapoorboyIneednosympathyeasycomeeasygowillyoulet
+	valgrind -v --leak-check=yes --track-origins=yes ./aes_sample IsthisthereallifeIsthisjustfantasyCaughtinalandslideNoescapefromrealityOpenyoureyesLookuptotheskiesandseeI\'mjustapoorboyIneednosympathyeasycomeeasygowillyoulet

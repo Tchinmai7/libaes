@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include "inv_aes.h"
@@ -17,6 +18,7 @@ size_t aes_ctr_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     uint64_t ctr = 0;
     memcpy(&ctr, iv+8, 8);
     int block_size = (input_length / 16);
+    int last_block_size = input_length % 16;
 
 #ifdef DEBUG_OFB
     printf("The Decrypt IV is \n");
@@ -42,7 +44,14 @@ size_t aes_ctr_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
         memcpy(*output + ((i - 1) * 16), temp_op, 16);
         output_length++;
     }
-    return output_length * 16;
+    // Handle the last block here
+    cipher(iv, temp_op, expanded_key, Nk);
+    // Xor the results of the encryption with the block of cipher text
+    memcpy(block, input + (block_size * 16), last_block_size);
+    Xor(temp_op, block, last_block_size);
+    memcpy(*output + ((block_size - 1) * 16), temp_op, last_block_size);
+
+    return output_length * 16 + last_block_size;
 }
 size_t aes_ofb_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
@@ -166,31 +175,33 @@ size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int i
 #endif
     size_t output_length = 0;
     uint8_t* padded_op = NULL;
+    bool strip_padding_bytes = true;
     switch(aes_params->aes_mode) {
         case AES_MODE_CBC:
             // Padded output string will be 16 bytes less than the input (for the IV)
             // Calloc instead of Malloc to zero initialize memory, to prevent cache attacks.
-            // padded_op = malloc(input_length - 16); 
+            strip_padding_bytes = true;
             padded_op = calloc(input_length - 16, 1);
             output_length = aes_cbc_mode_decrypt(input, &padded_op, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_ECB:
-            //padded_op = malloc(input_length);
+            strip_padding_bytes = true;
             padded_op = calloc(input_length, 1);
             output_length = aes_ecb_mode_decrypt(input, &padded_op, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_CTR:
-            //padded_op = malloc(input_length - 16); 
-            padded_op = calloc(input_length - 16, 1);
-            output_length = aes_ctr_mode_decrypt(input, &padded_op, aes_params->Nk, expanded_key, input_length);
+            strip_padding_bytes = false;
+            *output = calloc(input_length - 16, 1);
+            output_length = aes_ctr_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
+            return output_length;
             break;
         case AES_MODE_OFB:
-            //padded_op = malloc(input_length - 16); 
+            strip_padding_bytes = false;
             padded_op = calloc(input_length - 16, 1);
             output_length = aes_ofb_mode_decrypt(input, &padded_op, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_CFB:
-            //padded_op = malloc(input_length - 16); 
+            strip_padding_bytes = false;
             padded_op = calloc(input_length - 16, 1);
             output_length = aes_cfb_mode_decrypt(input, &padded_op, aes_params->Nk, expanded_key, input_length);
             break;
@@ -198,7 +209,11 @@ size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int i
             break;
     }
 
-    size_t op_len = strip_padding(padded_op, output, output_length);
-    free(padded_op);
-    return op_len;
+    if (strip_padding_bytes) {
+        output_length = strip_padding(padded_op, output, output_length);
+        free(padded_op);
+        return output_length;
+    } else {
+        return output_length;
+    }
 }

@@ -24,6 +24,7 @@ uint8_t inv_sbox[16][16] = {
 
 uint8_t get_inv_sbox_value(uint8_t val) 
 {
+    // Val is guaranteed to be 8 bits. Hence it is safe to shift, and does not violate INT34-C
     uint8_t low = val & 0x0F;
     uint8_t high = (val & 0xF0) >> 4;
     return inv_sbox[high][low];

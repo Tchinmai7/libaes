@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include "encrypt.h"
@@ -8,6 +9,7 @@
 size_t aes_ctr_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     int block_size = input_length / 16;
+    int last_block_size = input_length  % 16;
     uint8_t iv[16] = {0x00};
     // Get a nonce of 8 bytes, to fill the first 64 bits of the IV
     // The rest of the values will be 0's.
@@ -40,7 +42,13 @@ size_t aes_ctr_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
         memcpy(*output + (i * 16) + 16, temp_op, 16);
         output_length ++;
     }
-    return output_length * 16;
+    // Deal with the last block here
+    cipher(iv, temp_op, expanded_key, Nk);
+    memcpy(block, input + (block_size * 16), last_block_size);
+    // Xor the encrypted val with the plain text
+    Xor(temp_op, block, last_block_size);
+    memcpy(*output + (block_size * 16) + 16, temp_op, last_block_size);
+    return (output_length * 16) + last_block_size;
 }
 size_t aes_ofb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
@@ -166,12 +174,10 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* ip, uint8_t** output, int ip_l
     printf("The expanded key is:\n");
     print_word(expanded_key, len);
 #endif
-
     uint8_t* input = NULL; 
     // Pad the message. We don't care if the message is a multiple of 16. Always Pad.
     size_t input_length = add_padding(ip, &input, ip_len);
     size_t output_length = 0;
-
 #ifdef DEBUG_PADDING
     printf("The padded message is of len %ld\n", input_length);
     print_word(input, input_length);
@@ -191,10 +197,10 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* ip, uint8_t** output, int ip_l
             output_length = aes_ecb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_CTR:
-            // We know that the length has to be input_length + 16 (for the IV)
+            // AES with CTR mode needs no padding.
             // *output = malloc(input_length + 16);
-            *output = calloc(input_length + 16, 1);
-            output_length = aes_ctr_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
+            *output = calloc(ip_len + 16, 1);
+            output_length = aes_ctr_mode_encrypt(ip, output, aes_params->Nk, expanded_key, ip_len);
             break;
         case AES_MODE_OFB:
             // We know that the length has to be input_length + 16 (for the IV)
