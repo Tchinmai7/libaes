@@ -19,13 +19,6 @@ size_t aes_ctr_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     memcpy(&ctr, iv+8, 8);
     int block_size = (input_length / 16);
     int last_block_size = input_length % 16;
-
-#ifdef DEBUG_OFB
-    printf("The Decrypt IV is \n");
-    print_word(iv, 16);
-    printf("the num blocks is %d\n", block_size);
-#endif
-
     uint8_t temp_op[16] = {0x00};
     uint8_t block[16] = {0x00};
     size_t output_length = 0;
@@ -140,14 +133,6 @@ size_t aes_cbc_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     // IV is in the first 16 bytes of the cipher text
     memcpy(iv, input, 16);
     int block_size = (input_length / 16);
-
-#ifdef DEBUG_CBC
-    printf("The Decrypt IV is \n");
-    print_word(iv, 16);
-    print_word(input, input_length);
-    printf("the num blocks is %d\n", block_size);
-#endif
-
     uint8_t block[16] = {0x00};
     uint8_t temp_op[16] = {0x00};
     size_t output_length = 0;
@@ -170,11 +155,6 @@ size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int i
     int len = 4 * (Nr + 1) * 4;
     uint8_t expanded_key[len]; 
     expand_key(aes_params->key, aes_params->Nk, expanded_key);
-
-#ifdef DEBUG_KEYS
-    printf("The expanded key is:\n");
-    print_word(expanded_key, len);
-#endif
     size_t output_length = 0;
     uint8_t* padded_op = NULL;
     bool strip_padding_bytes = true;

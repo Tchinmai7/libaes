@@ -37,11 +37,6 @@ void inv_sub_bytes(uint8_t (*in)[4])
             in[i][j] = get_inv_sbox_value(in[i][j]);
         }
     }
-
-#ifdef DEBUG_INV_CIPHER
-    printf("INV Sub Bytes:\n");
-    dump_matrix(in);
-#endif
 }
 
 void inv_shift_rows(uint8_t (*in)[4]) 
@@ -68,12 +63,6 @@ void inv_shift_rows(uint8_t (*in)[4])
     in[3][1]= in[3][2];
     in[3][2]= in[3][3];
     in[3][3]= temp;
-
-#ifdef DEBUG_INV_CIPHER
-    printf("INV Shift Rows:\n");
-    dump_matrix(in);
-#endif
-
 }
 
 uint8_t multiply_by_09(uint8_t val)
@@ -118,11 +107,6 @@ void inv_mix_columns(uint8_t (*in)[4])
         // newC4 = (0x0b * c1) ^ (0x0d * c2) ^ (0x09 * c3) ^ (0x0e * c4);
         in[3][i] = multiply_by_0b(old_col[0]) ^ multiply_by_0d(old_col[1]) ^ multiply_by_09(old_col[2]) ^ multiply_by_0e(old_col[3]);
     }
-
-#ifdef DEBUG_INV_CIPHER
-    printf("INV Mix Columns:\n");
-    dump_matrix(in);
-#endif
 }
 
 void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
@@ -131,30 +115,16 @@ void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
     uint8_t state[4][4] = {{0x00}};
     uint8_t temp[16] = {0x00}; 
     convert_to_matrix(in, state);
-
-#ifdef DEBUG_INV_CIPHER
-    printf("The state is \n");
-    dump_matrix(state);
-#endif
-
     int Nr = getNr(Nk);
     memcpy(temp, w + (Nr * 4 * 4), 16);
     uint8_t roundKey[4][4] = {{0x00}};
     convert_to_matrix(temp, roundKey);
-    
-#ifdef DEBUG_INV_CIPHER
-    printf("The round Key is\n");
-    dump_matrix(roundKey);
-#endif
     
     add_round_key(state, roundKey);
 
     int round;
     int n = 1;
     for (round = Nr - 1; round >= 1; round--) {
-#ifdef DEBUG_INV_CIPHER
-        printf("Starting Round:[%d]\n", n);
-#endif
         inv_shift_rows(state);
         inv_sub_bytes(state);
         memcpy(temp, w + (round * 4 * 4), 16);
@@ -163,9 +133,6 @@ void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
         inv_mix_columns(state); 
         n ++;
     }
-#ifdef DEBUG_INV_CIPHER
-    printf("Starting Round:[%d]\n", n);
-#endif
     inv_shift_rows(state);
     inv_sub_bytes(state);
     memcpy(temp, w, 16);

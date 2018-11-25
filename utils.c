@@ -14,11 +14,6 @@ void Xor(uint8_t* input, uint8_t* val, int length)
 	for (int i = 0; i < length; i++) {
 		input[i] = input[i] ^ val[i];
 	}
-
-#ifdef DEBUG_KEYS
-	printf("Xor:\t");
-	print_word(input, length);
-#endif
 }
 
 void xor_with_return(uint8_t* input, uint8_t* val, uint8_t* ret, int length)
@@ -26,11 +21,6 @@ void xor_with_return(uint8_t* input, uint8_t* val, uint8_t* ret, int length)
 	for (int i = 0; i < length; i++) {
     		ret[i] = input[i] ^ val[i];
     	}
-
-#ifdef DEBUG_KEYS
-    printf("Xor with return:\t");
-    print_word(ret, length);
-#endif
 }
 
 int getNr(int Nk)
@@ -83,7 +73,6 @@ void convert_to_array(uint8_t(*in)[4], uint8_t* out)
     }   
 }
 
-// TODO: TARUN: Change this to something else
 uint8_t multiply_by_two(uint8_t val)
 {
   return ((val << 1) ^ (((val >> 7) & 1) * 0x1b));
@@ -96,11 +85,6 @@ void add_round_key(uint8_t (*in)[4], uint8_t (*w)[4])
             in[i][j] = in[i][j] ^ w[i][j];    
         }
     }
-
-#ifdef DEBUG_CIPHER
-    printf("Add Round Key:\n");
-    dump_matrix(in);
-#endif
 }
 
 void get_random_bytes(uint8_t* result, size_t size)
@@ -114,4 +98,3 @@ void get_random_bytes(uint8_t* result, size_t size)
 	fread(result, size, 1, f);
 	fclose(f);
 }
-

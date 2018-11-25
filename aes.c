@@ -32,18 +32,14 @@ void free_aes_params(aes_params_t* params)
 aes_params_t* init_aes_params()
 {
 	// set sane defaults.
-	// aes_params_t* param = malloc(sizeof(aes_params_t));
 	aes_params_t* param = calloc(1, sizeof(aes_params_t));
     if (param == NULL) {
         // Fatal error!. Malloc failed, crash.
         return NULL;
     }
-    // TODO: Maybe use 256 bit key always
 	param->key_size = AES_128_BIT;
-	param->aes_mode = AES_MODE_CFB;
+	param->aes_mode = AES_MODE_CTR;
 	param->Nk = AES_128_BIT/4;
-    // TODO: If we go with secure random keys, generate keys here
-    // Think about getting user input as a seed to the PRG.
 	param->key = NULL;
 	return param;
 }
@@ -76,18 +72,9 @@ uint8_t get_sbox_value(uint8_t val)
 void sub_word(uint8_t* input) 
 {
     uint8_t temp[4];
-#ifdef DEBUG_KEYS
-    printf("sub_word: ");
-#endif
     for (int i = 0; i < 4; i++) {
         temp[i] = get_sbox_value(input[i]);
-#ifdef DEBUG_KEYS
-        printf("%02x", temp[i]);
-#endif
     }
-#ifdef DEBUG_KEYS
-    printf("\t");
-#endif
     memcpy(input, temp, 4);
 }
 
@@ -98,11 +85,6 @@ void rot_word(uint8_t* input)
     temp[1] = input[2];
     temp[2] = input[3];
     temp[3] = input[0];
-
-#ifdef DEBUG_KEYS
-    printf("rot_word: %02x%02x%02x%02x\t", temp[0], temp[1], temp[2], temp[3]);
-#endif
-
     memcpy(input, temp, 4);
 }
 
@@ -145,11 +127,6 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
         temp [1] = key[i + 1];
         temp [2] = key[i + 2];
         temp [3] = key[i + 3];
-
-#ifdef DEBUG_KEYS
-        printf("W: %02x%02x%02x%02x\n", temp[0], temp[1], temp[2], temp[3]);
-#endif
-
         memcpy(w + i , temp, 4);
         i += 4;
     }
@@ -158,11 +135,6 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
     while (i < Nb * (Nr + 1)) {
             int j = i * 4;
             memcpy(temp, w + j - 4 ,4);
-
-#ifdef DEBUG_KEYS
-            printf("I: %d, Temp: %02x%02x%02x%02x\t",i,  temp[0], temp[1], temp[2], temp[3]);
-#endif
-
             if (i % Nk == 0) { 
                 rot_word(temp);
                 sub_word(temp);
@@ -172,17 +144,8 @@ void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w)
             else if ((Nk > 6) &&  (i % Nk == 4)) {
                 sub_word(temp);
             }
-
-#ifdef DEBUG_KEYS
-            printf("W[i-Nk]: %02x%02x%02x%02x\n", *(w + j - Nk_bytes), *(w + j - Nk_bytes + 1), *(w + j - Nk_bytes + 2), *(w + j - Nk_bytes + 3));
-#endif
-
             xor_with_return(w + j - Nk_bytes, temp, w + j, 4);
             i = i + 1;
-
-#ifdef DEBUG_KEYS
-            printf("\n");
-#endif
     }
 }
 
@@ -193,16 +156,10 @@ void sub_bytes(uint8_t (*in)[4])
             in[i][j] = get_sbox_value(in[i][j]);
         }
     }
-
-#ifdef DEBUG_CIPHER
-    printf("Sub Bytes:\n");
-    dump_matrix(in);
-#endif
 }
 
 void shift_rows(uint8_t (*in)[4]) 
 {
-    // Doing this lazily now. Might have to cleanup later
     uint8_t temp = 0x00;
     temp = in[1][0];
     in[1][0] = in[1][1];
@@ -225,11 +182,6 @@ void shift_rows(uint8_t (*in)[4])
     in[3][3] = in[3][2]; 
     in[3][2] = in[3][1];
     in[3][1] = temp;
-
-#ifdef DEBUG_CIPHER
-    printf("Shift Rows:\n");
-    dump_matrix(in);
-#endif
 }
 
 void mix_columns(uint8_t (*in)[4]) 
@@ -245,11 +197,6 @@ void mix_columns(uint8_t (*in)[4])
         in[2][i] = old_col[0] ^ old_col[1] ^ multiply_by_two(old_col[2]) ^ (multiply_by_two(old_col[3]) ^ old_col[3]);
         in[3][i] = (multiply_by_two(old_col[0]) ^ old_col[0]) ^ old_col[1] ^ old_col[2] ^ multiply_by_two(old_col[3]);
     }
-
-#ifdef DEBUG_CIPHER
-    printf("Mix Columns:\n");
-    dump_matrix(in);
-#endif
 }
 
 void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
@@ -259,19 +206,7 @@ void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
     memcpy(temp, w, 16);
     uint8_t roundKey[4][4] = {{0x00}};
     convert_to_matrix(in, state);
-
-#ifdef DEBUG_CIPHER
-    printf("State Matrix:\n");
-    dump_matrix(state);
-#endif
-
     convert_to_matrix(temp, roundKey);
-
-#ifdef DEBUG_CIPHER
-    printf("Round Key:\n");
-    dump_matrix(roundKey);
-#endif
-    
     add_round_key(state, roundKey);
     
     int Nr = getNr(Nk);
@@ -279,9 +214,6 @@ void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
     int round;
 
     for (round = 1; round < Nr; round++) {
-#ifdef DEBUG_CIPHER
-        printf("Starting Round:[%d]\n", round);
-#endif
         sub_bytes(state);
         shift_rows(state);
         mix_columns(state);
@@ -289,11 +221,6 @@ void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
         convert_to_matrix(temp, roundKey);
         add_round_key(state, roundKey);
     }
-
-#ifdef DEBUG_CIPHER
-    printf("Starting Round:[%d]\n", round);
-#endif
-
     sub_bytes(state);
     shift_rows(state);
     memcpy(temp, w + (Nr * 4 * 4), 16);

@@ -11,16 +11,11 @@ size_t aes_ctr_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     int block_size = input_length / 16;
     int last_block_size = input_length  % 16;
     uint8_t iv[16] = {0x00};
-    // Get a nonce of 8 bytes, to fill the first 64 bits of the IV
-    // The rest of the values will be 0's.
-    get_random_bytes(iv, 8);
-
-#ifdef DEBUG_COFB
-    printf("The IV is \n");
-    print_word(iv, 16);
-    printf("the num blocks is %d\n", block_size);
-#endif 
-
+    uint64_t ctr = 0;
+    // Get a random byte string of 128 bits
+    // Use the last 64bits as the ctr
+    get_random_bytes(iv, 16);
+    memcpy(&ctr, iv + 8 , 8);
     uint8_t block[16] = {0x00};
     uint8_t temp_op[16] = {0x00};
 
@@ -28,7 +23,6 @@ size_t aes_ctr_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     memcpy(*output, iv, 16);
     //to account for the IV that's appended.
     size_t output_length = 1;
-    uint64_t ctr = 0;
     for (int i = 0; i < block_size; i++) {
         // First encrypt the IV
         cipher(iv, temp_op, expanded_key, Nk);
@@ -142,13 +136,6 @@ size_t aes_cbc_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     get_random_bytes(iv, 16);
     // TODO: Rename as num_blocks
     int block_size = input_length / 16;
-
-#ifdef DEBUG_CBC
-    printf("The IV is \n");
-    print_word(iv, 16);
-    printf("the num blocks is %d\n", block_size);
-#endif 
-
     uint8_t block[16] = {0x00};
     uint8_t temp_op[16] = {0x00};
 
@@ -175,20 +162,10 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* ip, uint8_t** output, int ip_l
     int len = 4 * (Nr + 1) * 4;
     uint8_t expanded_key[len]; 
     expand_key(aes_params->key, aes_params->Nk, expanded_key);
-
-#ifdef DEBUG_KEYS
-    printf("The expanded key is:\n");
-    print_word(expanded_key, len);
-#endif
     uint8_t* input = NULL; 
     // Pad the message. We don't care if the message is a multiple of 16. Always Pad.
     size_t input_length = add_padding(ip, &input, ip_len);
     size_t output_length = 0;
-#ifdef DEBUG_PADDING
-    printf("The padded message is of len %ld\n", input_length);
-    print_word(input, input_length);
-#endif
-
     switch(aes_params->aes_mode) {
         case AES_MODE_CBC:
             // We know that the length has to be input_length + 16 (for the IV)
