@@ -50,9 +50,11 @@ size_t aes_ctr_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     memcpy(*output + (block_size * 16) + 16, temp_op, last_block_size);
     return (output_length * 16) + last_block_size;
 }
+
 size_t aes_ofb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     int block_size = input_length / 16;
+    int last_block_size = input_length % 16;
     uint8_t iv[16] = {0x00};
     get_iv(iv, 16);
 
@@ -80,7 +82,15 @@ size_t aes_ofb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
         memcpy(*output + (i * 16) + 16, temp_op, 16);
         output_length ++;
     }
-    return output_length * 16;
+    // Process the last incomplete block here
+    cipher(iv, temp_op, expanded_key, Nk);
+    memcpy(iv, temp_op, 16);
+    memcpy(block, input + (block_size * 16), last_block_size);
+    // Xor the encrypted val with the plain text
+    Xor(temp_op, block, last_block_size);
+    memcpy(*output + (block_size * 16) + 16, temp_op, last_block_size);
+    
+    return (output_length * 16) + last_block_size;
 }
 size_t aes_cfb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
@@ -198,15 +208,13 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* ip, uint8_t** output, int ip_l
             break;
         case AES_MODE_CTR:
             // AES with CTR mode needs no padding.
-            // *output = malloc(input_length + 16);
             *output = calloc(ip_len + 16, 1);
             output_length = aes_ctr_mode_encrypt(ip, output, aes_params->Nk, expanded_key, ip_len);
             break;
         case AES_MODE_OFB:
-            // We know that the length has to be input_length + 16 (for the IV)
-            // *output = malloc(input_length + 16);
-            *output = calloc(input_length + 16, 1);
-            output_length = aes_ofb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
+            // AES with OFB mode needs no padding.
+            *output = calloc(ip_len + 16, 1);
+            output_length = aes_ofb_mode_encrypt(ip, output, aes_params->Nk, expanded_key, ip_len);
             break;
         case AES_MODE_CFB:
             // We know that the length has to be input_length + 16 (for the IV)

@@ -53,18 +53,14 @@ size_t aes_ctr_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
 
     return output_length * 16 + last_block_size;
 }
+
 size_t aes_ofb_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     uint8_t iv[16] = {0x00};
     // IV is in the first 16 bytes of the cipher text
     memcpy(iv, input, 16);
     int block_size = (input_length / 16);
-
-#ifdef DEBUG_OFB
-    printf("The Decrypt IV is \n");
-    print_word(iv, 16);
-    printf("the num blocks is %d\n", block_size);
-#endif
+    int last_block_size = input_length % 16;
 
     uint8_t temp_op[16] = {0x00};
     uint8_t block[16] = {0x00};
@@ -81,7 +77,14 @@ size_t aes_ofb_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
         memcpy(*output + ((i - 1) * 16), temp_op, 16);
         output_length++;
     }
-    return output_length * 16;
+    // Handle the last block here
+    cipher(iv, temp_op, expanded_key, Nk);
+    // Xor the results of the encryption with the `last_block_size` bytes cipher text
+    memcpy(block, input + (block_size * 16), last_block_size);
+    Xor(temp_op, block, last_block_size);
+    memcpy(*output + ((block_size - 1) * 16), temp_op, last_block_size);
+
+    return (output_length * 16)+ last_block_size;
 }
 
 
@@ -191,14 +194,15 @@ size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int i
             break;
         case AES_MODE_CTR:
             strip_padding_bytes = false;
-            *output = calloc(input_length - 16, 1);
+            // add one byte for null character
+            *output = calloc(input_length - 16 + 1, 1);
             output_length = aes_ctr_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
-            return output_length;
             break;
         case AES_MODE_OFB:
             strip_padding_bytes = false;
-            padded_op = calloc(input_length - 16, 1);
-            output_length = aes_ofb_mode_decrypt(input, &padded_op, aes_params->Nk, expanded_key, input_length);
+            // add one byte for null character
+            *output = calloc(input_length - 16 + 1, 1);
+            output_length = aes_ofb_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_CFB:
             strip_padding_bytes = false;
