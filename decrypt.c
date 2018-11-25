@@ -164,29 +164,49 @@ size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int i
             // Calloc instead of Malloc to zero initialize memory, to prevent cache attacks.
             strip_padding_bytes = true;
             padded_op = calloc(input_length - 16, 1);
+            if (NULL == padded_op) {
+                printf("FATAL ERROR: Calloc failure\n");
+                exit(-1);
+            }
             output_length = aes_cbc_mode_decrypt(input, &padded_op, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_ECB:
             strip_padding_bytes = true;
             padded_op = calloc(input_length, 1);
+            if (NULL == padded_op) {
+                printf("FATAL ERROR: Calloc failure\n");
+                exit(-1);
+            }
             output_length = aes_ecb_mode_decrypt(input, &padded_op, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_CTR:
             strip_padding_bytes = false;
             // add one byte for null character
             *output = calloc(input_length - 16 + 1, 1);
+            if (NULL == output) {
+                printf("FATAL ERROR: Calloc failure\n");
+                exit(-1);
+            }
             output_length = aes_ctr_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_OFB:
             strip_padding_bytes = false;
             // add one byte for null character
             *output = calloc(input_length - 16 + 1, 1);
+            if (NULL == output) {
+                printf("FATAL ERROR: Calloc failure\n");
+                exit(-1);
+            }
             output_length = aes_ofb_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_CFB:
             strip_padding_bytes = false;
             // add one byte for null character
             *output = calloc(input_length - 16 + 1, 1);
+            if (NULL == output) {
+                printf("FATAL ERROR: Calloc failure\n");
+                exit(-1);
+            }
             output_length = aes_cfb_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         default:

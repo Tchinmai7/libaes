@@ -97,7 +97,8 @@ void get_random_bytes(uint8_t* result, size_t size)
     // This is the recommended method of fetchig random bytes. It is safe to read upto 32mb of data
     // in one shot from /dev/urandom
 	f = fopen("/dev/urandom", "r");
+    assert(f != NULL);
 	size_t val = fread(result, size, 1, f);
     assert(val == 1);
-	fclose(f);
+	assert(fclose(f) >= 0);
 }

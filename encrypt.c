@@ -171,27 +171,47 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* ip, uint8_t** output, int ip_l
             // We know that the length has to be input_length + 16 (for the IV)
             //*output = malloc(input_length + 16);
             *output = calloc(input_length + 16, 1);
+            if (NULL == output) {
+                printf("FATAL ERROR: Calloc failure\n");
+                exit(-1);
+            }
             output_length = aes_cbc_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_ECB:
             // We know that the length has to be input_length
             // *output = malloc(input_length);
             *output = calloc(input_length, 1);
+            if (NULL == output) {
+                printf("FATAL ERROR: Calloc failure\n");
+                exit(-1);
+            }
             output_length = aes_ecb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_CTR:
             // AES with CTR mode needs no padding.
             *output = calloc(ip_len + 16, 1);
+            if (NULL == output) {
+                printf("FATAL ERROR: Calloc failure\n");
+                exit(-1);
+            }
             output_length = aes_ctr_mode_encrypt(ip, output, aes_params->Nk, expanded_key, ip_len);
             break;
         case AES_MODE_OFB:
             // AES with OFB mode needs no padding.
             *output = calloc(ip_len + 16, 1);
+            if (NULL == output) {
+                printf("FATAL ERROR: Calloc failure\n");
+                exit(-1);
+            }
             output_length = aes_ofb_mode_encrypt(ip, output, aes_params->Nk, expanded_key, ip_len);
             break;
         case AES_MODE_CFB:
             // AES with CFB mode needs no padding.
             *output = calloc(ip_len + 16, 1);
+            if (NULL == output) {
+                printf("FATAL ERROR: Calloc failure\n");
+                exit(-1);
+            }
             output_length = aes_cfb_mode_encrypt(ip, output, aes_params->Nk, expanded_key, ip_len);
             break;
         default:
