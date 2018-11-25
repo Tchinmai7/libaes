@@ -103,14 +103,15 @@ void add_round_key(uint8_t (*in)[4], uint8_t (*w)[4])
 #endif
 }
 
-void get_iv(uint8_t* iv, size_t size)
+void get_random_bytes(uint8_t* result, size_t size)
 {
 	FILE *f;
-    // This is non-blocking, but it is a PRNG.
-    // /dev/random is blocking, but it is a TRNG
-    // TODO: Read about attacks on urandom/random
+    // This is non-blocking, and a CPRNG.
+    // A popular myth is that /dev/random is `safer` than /dev/urandom, but its not the case.
+    // This is the recommended method of fetchig random bytes. It is safe to read upto 32mb of data
+    // in one shot from /dev/urandom
 	f = fopen("/dev/urandom", "r");
-	fread(iv, size, 1, f);
+	fread(result, size, 1, f);
 	fclose(f);
 }
 

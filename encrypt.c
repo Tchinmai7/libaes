@@ -13,7 +13,7 @@ size_t aes_ctr_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     uint8_t iv[16] = {0x00};
     // Get a nonce of 8 bytes, to fill the first 64 bits of the IV
     // The rest of the values will be 0's.
-    get_iv(iv, 8);
+    get_random_bytes(iv, 8);
 
 #ifdef DEBUG_COFB
     printf("The IV is \n");
@@ -56,7 +56,7 @@ size_t aes_ofb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     int block_size = input_length / 16;
     int last_block_size = input_length % 16;
     uint8_t iv[16] = {0x00};
-    get_iv(iv, 16);
+    get_random_bytes(iv, 16);
     uint8_t block[16] = {0x00};
     uint8_t temp_op[16] = {0x00};
 
@@ -89,7 +89,7 @@ size_t aes_ofb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
 size_t aes_cfb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     uint8_t iv[16] = {0x00};
-    get_iv(iv, 16);
+    get_random_bytes(iv, 16);
     int block_size = input_length / 16;
     int last_block_size = input_length % 16;
     uint8_t block[16] = {0x00};
@@ -139,7 +139,7 @@ size_t aes_ecb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
 size_t aes_cbc_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     uint8_t iv[16] = {0x00};
-    get_iv(iv, 16);
+    get_random_bytes(iv, 16);
     // TODO: Rename as num_blocks
     int block_size = input_length / 16;
 
