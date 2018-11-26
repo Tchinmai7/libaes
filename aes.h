@@ -25,11 +25,12 @@ typedef struct {
 } aes_params_t;
 
 // Always call init parameters first
+// All header functions are compliant with API08-C
 aes_params_t* init_aes_params();
-void free_aes_params(aes_params_t* params);
-void set_aes_key(aes_params_t* param, aes_key_size_t key_size);
-void SubWord(uint8_t* input);
-void RotWord(uint8_t* input);
-void expand_key(uint8_t* key, uint8_t Nk, uint8_t* w);
-void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk);
+void free_aes_params(aes_params_t* /* param */);
+void set_aes_key(aes_params_t* /* param */, aes_key_size_t /* key_size */);
+void SubWord(uint8_t* /* input */);
+void RotWord(uint8_t* /* input */);
+void expand_key(uint8_t* /* key */, uint8_t /* Nk */, uint8_t* /* expanded_key */);
+void cipher(uint8_t* /* in */, uint8_t* /* out */, uint8_t* /* w */, int /* Nk */);
 #endif

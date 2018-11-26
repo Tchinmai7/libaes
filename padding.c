@@ -25,6 +25,7 @@ size_t add_padding(uint8_t* messagebuf, uint8_t **output_buf, int input_msglen)
     return input_msglen + bytestopad;
 }
 
+//compliant with API02 - C
 size_t strip_padding(uint8_t* padbuf,  uint8_t **outputbuf, int buflen)
 {
     assert(valid_pointer(padbuf) != 0);
