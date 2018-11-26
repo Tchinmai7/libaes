@@ -37,7 +37,7 @@ size_t aes_ctr_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
         memcpy(*output + ((i - 1) * BLOCK_SIZE), temp_op, BLOCK_SIZE);
         output_length++;
     }
-    // Handle the last block here
+    // Handle the last incomplete block here
     cipher(iv, temp_op, expanded_key, Nk);
     // Xor the results of the encryption with the block of cipher text
     memcpy(block, input + (block_size * BLOCK_SIZE), last_block_size);
@@ -70,7 +70,7 @@ size_t aes_ofb_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
         memcpy(*output + ((i - 1) * BLOCK_SIZE), temp_op, BLOCK_SIZE);
         output_length++;
     }
-    // Handle the last block here
+    // Handle the last incomplete block here
     cipher(iv, temp_op, expanded_key, Nk);
     // Xor the results of the encryption with the `last_block_size` bytes cipher text
     memcpy(block, input + (block_size * BLOCK_SIZE), last_block_size);
@@ -101,7 +101,7 @@ size_t aes_cfb_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
         memcpy(iv, block, BLOCK_SIZE);
         output_length++;
     }
-    // Handle the last block here. 
+    // Handle the last incomplete block here. 
     cipher(iv, temp_op, expanded_key, Nk);
     memcpy(block, input + (block_size * BLOCK_SIZE), last_block_size);
     Xor(temp_op, block, last_block_size);
@@ -163,9 +163,10 @@ size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int i
     switch(aes_params->aes_mode) {
         case AES_MODE_CBC:
             // Padded output string will be 16 bytes less than the input (for the IV)
-            // Calloc instead of Malloc to zero initialize memory, to prevent cache attacks.
+            // Calloc instead of Malloc to zero initialize memory
+            // Add one byte for null termination at the end
             strip_padding_bytes = true;
-            padded_op = calloc(input_length - BLOCK_SIZE, 1);
+            padded_op = calloc(input_length - BLOCK_SIZE + 1, 1);
             if (NULL == padded_op) {
                 printf("FATAL ERROR: Calloc failure\n");
                 exit(-1);
@@ -174,7 +175,7 @@ size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int i
             break;
         case AES_MODE_ECB:
             strip_padding_bytes = true;
-            padded_op = calloc(input_length, 1);
+            padded_op = calloc(input_length + 1, 1);
             if (NULL == padded_op) {
                 printf("FATAL ERROR: Calloc failure\n");
                 exit(-1);

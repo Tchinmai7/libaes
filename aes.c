@@ -152,22 +152,14 @@ void rot_word(uint8_t* input)
 // Returns Round Constant given any index. 
 uint8_t getRcon(int idx)
 {
-    uint8_t rc[11] = {0x00};
+    uint8_t rc[11] = {0x01};
     for (int r = 1; r <= idx;  r++) 
     {
-        if (r == 0) {
-            rc[r] = 0x8d;
-        }
-        else if (r == 1) {
-            rc[r] = 0x01;
-        } else {
-            rc[r] = multiply_by_two(rc[r-1]);
-        }
+        rc[r] = multiply_by_two(rc[r-1]);
     }
     return rc[idx];
 }
 
-//TODO: Rename w to expanded_key
 void expand_key(uint8_t* key, uint8_t Nk, uint8_t* expanded_key)
 {
     assert(valid_pointer(key) != 0);
@@ -263,34 +255,37 @@ void mix_columns(uint8_t (*in)[WORD_SIZE])
     }
 }
 
-void cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
+void cipher(uint8_t* in, uint8_t* out, uint8_t* expanded_key, int Nk)
 {
     assert(valid_pointer(in) != 0);
     assert(valid_pointer(out) != 0);
-    assert(valid_pointer(w) != 0);
+    assert(valid_pointer(expanded_key) != 0);
     uint8_t state[WORD_SIZE][WORD_SIZE] = {{0x00}};
     uint8_t temp[BLOCK_SIZE] = {0x00}; 
-    memcpy(temp, w, BLOCK_SIZE);
+    memcpy(temp, expanded_key, BLOCK_SIZE);
     uint8_t roundKey[WORD_SIZE][WORD_SIZE] = {{0x00}};
     convert_to_matrix(in, state);
     convert_to_matrix(temp, roundKey);
     add_round_key(state, roundKey);
     
     int Nr = getNr(Nk);
-    //TODO: handle negative
+    if (Nr < 0) {
+        printf("Nr is negative. Aborting\n");
+        abort();
+    }
     int round;
 
     for (round = 1; round < Nr; round++) {
         sub_bytes(state);
         shift_rows(state);
         mix_columns(state);
-        memcpy(temp, w + (round * WORD_SIZE * WORD_SIZE), BLOCK_SIZE);
+        memcpy(temp, expanded_key + (round * WORD_SIZE * WORD_SIZE), BLOCK_SIZE);
         convert_to_matrix(temp, roundKey);
         add_round_key(state, roundKey);
     }
     sub_bytes(state);
     shift_rows(state);
-    memcpy(temp, w + (Nr * WORD_SIZE * WORD_SIZE), BLOCK_SIZE);
+    memcpy(temp, expanded_key + (Nr * WORD_SIZE * WORD_SIZE), BLOCK_SIZE);
     convert_to_matrix(temp, roundKey);
     add_round_key(state, roundKey);
     convert_to_array(state, out);

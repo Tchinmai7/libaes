@@ -154,73 +154,75 @@ size_t aes_cbc_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     return output_length * BLOCK_SIZE;
 }
 
-size_t encrypt(aes_params_t* aes_params, uint8_t* ip, uint8_t** output, int ip_len)
+size_t encrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int input_length)
 {
     assert(valid_pointer(aes_params) != 0);
-    assert(valid_pointer(ip) != 0);
+    assert(valid_pointer(input) != 0);
+    uint8_t* padded_input = NULL; 
+    size_t output_length = 0;
+    size_t padded_input_length = 0;
+    
     int Nr = getNr(aes_params->Nk);
     // the last *4 is to convert words to bytes
     int len = 4 * (Nr + 1) * 4;
     uint8_t expanded_key[len]; 
     expand_key(aes_params->key, aes_params->Nk, expanded_key);
-    uint8_t* input = NULL; 
-    // Pad the message. We don't care if the message is a multiple of BLOCK_SIZE. Always Pad.
-    size_t input_length = add_padding(ip, &input, ip_len);
-    size_t output_length = 0;
     switch(aes_params->aes_mode) {
         case AES_MODE_CBC:
             // We know that the length has to be input_length + BLOCK_SIZE (for the IV)
-            //*output = malloc(input_length + BLOCK_SIZE);
+            // Pad the message. We don't care if the message is a multiple of BLOCK_SIZE. Always Pad.
+            padded_input_length = add_padding(input, &padded_input, input_length);
+            *output = calloc(padded_input_length + BLOCK_SIZE, 1);
+            if (NULL == output) {
+                printf("FATAL ERROR: Calloc failure\n");
+                exit(-1);
+            }
+            output_length = aes_cbc_mode_encrypt(padded_input, output, aes_params->Nk, expanded_key, padded_input_length);
+            break;
+        case AES_MODE_ECB:
+            // We know that the length has to be input_length
+            padded_input_length = add_padding(input, &padded_input, input_length);
+            *output = calloc(padded_input_length, 1);
+            if (NULL == output) {
+                printf("FATAL ERROR: Calloc failure\n");
+                exit(-1);
+            }
+            output_length = aes_ecb_mode_encrypt(padded_input, output, aes_params->Nk, expanded_key, padded_input_length);
+            break;
+        case AES_MODE_CTR:
+            // AES with CTR mode needs no padding.
             *output = calloc(input_length + BLOCK_SIZE, 1);
             if (NULL == output) {
                 printf("FATAL ERROR: Calloc failure\n");
                 exit(-1);
             }
-            output_length = aes_cbc_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
-            break;
-        case AES_MODE_ECB:
-            // We know that the length has to be input_length
-            // *output = malloc(input_length);
-            *output = calloc(input_length, 1);
-            if (NULL == output) {
-                printf("FATAL ERROR: Calloc failure\n");
-                exit(-1);
-            }
-            output_length = aes_ecb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
-            break;
-        case AES_MODE_CTR:
-            // AES with CTR mode needs no padding.
-            *output = calloc(ip_len + BLOCK_SIZE, 1);
-            if (NULL == output) {
-                printf("FATAL ERROR: Calloc failure\n");
-                exit(-1);
-            }
-            output_length = aes_ctr_mode_encrypt(ip, output, aes_params->Nk, expanded_key, ip_len);
+            output_length = aes_ctr_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_OFB:
             // AES with OFB mode needs no padding.
-            *output = calloc(ip_len + BLOCK_SIZE, 1);
+            *output = calloc(input_length + BLOCK_SIZE, 1);
             if (NULL == output) {
                 printf("FATAL ERROR: Calloc failure\n");
                 exit(-1);
             }
-            output_length = aes_ofb_mode_encrypt(ip, output, aes_params->Nk, expanded_key, ip_len);
+            output_length = aes_ofb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         case AES_MODE_CFB:
             // AES with CFB mode needs no padding.
-            *output = calloc(ip_len + BLOCK_SIZE, 1);
+            *output = calloc(input_length + BLOCK_SIZE, 1);
             if (NULL == output) {
                 printf("FATAL ERROR: Calloc failure\n");
                 exit(-1);
             }
-            output_length = aes_cfb_mode_encrypt(ip, output, aes_params->Nk, expanded_key, ip_len);
+            output_length = aes_cfb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         default:
             break;
     }
 
-    free(input);
+    // padded_input might be NULL - But its ok.!
+    free(padded_input);
     // Per MEM01-C, set variables to null after free.
-    input = NULL;
+    padded_input = NULL;
     return output_length;
 }

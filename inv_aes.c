@@ -112,17 +112,17 @@ void inv_mix_columns(uint8_t (*in)[WORD_SIZE])
     }
 }
 
-void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
+void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* expanded_key, int Nk)
 {
     assert(valid_pointer(in) != 0);
     assert(valid_pointer(out) != 0);
-    assert(valid_pointer(w) != 0);
+    assert(valid_pointer(expanded_key) != 0);
     //Initialize with double braces to ensure that all objects are 0'd
     uint8_t state[WORD_SIZE][WORD_SIZE] = {{0x00}};
     uint8_t temp[BLOCK_SIZE] = {0x00}; 
     convert_to_matrix(in, state);
     int Nr = getNr(Nk);
-    memcpy(temp, w + (Nr * WORD_SIZE * WORD_SIZE), BLOCK_SIZE);
+    memcpy(temp, expanded_key + (Nr * WORD_SIZE * WORD_SIZE), BLOCK_SIZE);
     uint8_t roundKey[WORD_SIZE][WORD_SIZE] = {{0x00}};
     convert_to_matrix(temp, roundKey);
     
@@ -133,7 +133,7 @@ void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
     for (round = Nr - 1; round >= 1; round--) {
         inv_shift_rows(state);
         inv_sub_bytes(state);
-        memcpy(temp, w + (round * WORD_SIZE * WORD_SIZE), BLOCK_SIZE);
+        memcpy(temp, expanded_key + (round * WORD_SIZE * WORD_SIZE), BLOCK_SIZE);
         convert_to_matrix(temp, roundKey);
         add_round_key(state, roundKey);
         inv_mix_columns(state); 
@@ -141,7 +141,7 @@ void inv_cipher(uint8_t* in, uint8_t* out, uint8_t* w, int Nk)
     }
     inv_shift_rows(state);
     inv_sub_bytes(state);
-    memcpy(temp, w, BLOCK_SIZE);
+    memcpy(temp, expanded_key, BLOCK_SIZE);
     convert_to_matrix(temp, roundKey);
     add_round_key(state, roundKey);
     convert_to_array(state, out);

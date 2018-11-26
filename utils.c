@@ -30,8 +30,8 @@ void xor_with_return(uint8_t* input, uint8_t* val, uint8_t* ret, int length)
     assert(valid_pointer(val) != 0);
     assert(valid_pointer(ret) != 0);
 	for (int i = 0; i < length; i++) {
-    		ret[i] = input[i] ^ val[i];
-    	}
+    	ret[i] = input[i] ^ val[i];
+    }
 }
 
 int getNr(int Nk)
@@ -123,17 +123,6 @@ void get_random_bytes(uint8_t* result, size_t size)
     int ret = close(fd);
     assert(bytes_read == size);
     assert(ret >= 0);
-#if 0
-	FILE *f;
-	f = fopen("/dev/urandom", "r");
-    if (f == NULL) {
-        printf("Error opening /dev/urandom. Aborting \n");
-        abort();
-    }
-	size_t val = fread(result, size, 1, f);
-    assert(val == 1);
-	assert(fclose(f) >= 0);
-#endif
 }
 
 int valid_pointer(void *p)
