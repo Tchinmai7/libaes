@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 
     memcpy(input, argv[1], input_size);
     input[input_size] = '\0';
-    test_encryption( AES_128_BIT, 4, input, input_size); 
+    test_encryption(AES_128_BIT, 4, input, input_size); 
     printf("192 Bit AES - \n");
     test_encryption(AES_192_BIT, 6, input, input_size); 
     printf("256 Bit AES - \n");

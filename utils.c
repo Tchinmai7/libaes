@@ -24,6 +24,29 @@ void Xor(uint8_t* input, uint8_t* val, int length)
 	}
 }
 
+void copy_byte(uint8_t *r, const uint8_t *a, uint32_t b)
+{
+    uint8_t t;
+    b = -b; /* Now b is either 0 or 0xffffffff */
+    t = (*r ^ *a) & b;
+    *r ^= t;
+}
+
+// We need this because the compiler will optimzie the normal equality checking out
+int check_equality(uint8_t a, uint8_t b)
+{
+    uint8_t i; 
+    uint32_t r = 0;
+    uint8_t *ta = (uint8_t *) &a;
+    uint8_t *tb = (uint8_t *) &b;
+    for(i = 0;i < sizeof(uint8_t); i++)
+    {
+        r |= (ta[i] ^ tb[i]);
+    }
+    r = (-r) >> 31;
+    return (int)(1-r);
+}
+
 void xor_with_return(uint8_t* input, uint8_t* val, uint8_t* ret, int length)
 {
     assert(valid_pointer(input) != 0);

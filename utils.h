@@ -16,4 +16,7 @@ void print_word(uint8_t* /* word */, int /*len*/);
 uint8_t multiply_by_two(uint8_t /* val */);
 void get_random_bytes(uint8_t* /* result */, size_t /* size */);
 int valid_pointer(void * /* p */);
+void copy_byte(uint8_t * /* r */, const uint8_t * /* a */, uint32_t /* b */);
+int check_equality(uint8_t /* a */, uint8_t /* b */);
+
 #endif
