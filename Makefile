@@ -1,6 +1,7 @@
 CC=gcc
 #TODO: Add compiler flags to secure against buffer overflow
-CFLAGS=-Wall -Werror -Wextra -O3  
+CFLAGS=-Wall -Werror -Wextra -O3  -fPIE -fstack-protector-all -D_FORTIFY_SOURCE=2 -pedantic -pedantic-errors -pie -Wformat -Wformat-security 
+#-Wconversion -Wstack-protector -Wsign-conversion
 DEPS = aes.h inv_aes.h decrypt.h encrypt.h utils.h padding.h
 OBJ = aes.o inv_aes.o encrypt.o decrypt.o driver.o utils.o padding.o
 
