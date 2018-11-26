@@ -1,5 +1,9 @@
 #include <stdio.h>
-
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "utils.h"
 
 void print_word(uint8_t* word, int len) 
@@ -109,12 +113,27 @@ void get_random_bytes(uint8_t* result, size_t size)
     // A popular myth is that /dev/random is `safer` than /dev/urandom, but its not the case.
     // This is the recommended method of fetchig random bytes. It is safe to read upto 32mb of data
     // in one shot from /dev/urandom
+    // implement POS01-C: Prevent following symlinks
+    int fd = open("/dev/urandom", O_NOFOLLOW | O_RDONLY | O_CLOEXEC);
+    if (fd == -1) {
+        printf("Error opening /dev/urandom. Aborting \n");
+        abort();
+    }
+    size_t bytes_read = read(fd, result, size);
+    int ret = close(fd);
+    assert(bytes_read == size);
+    assert(ret >= 0);
+#if 0
 	FILE *f;
 	f = fopen("/dev/urandom", "r");
-    assert(f != NULL);
+    if (f == NULL) {
+        printf("Error opening /dev/urandom. Aborting \n");
+        abort();
+    }
 	size_t val = fread(result, size, 1, f);
     assert(val == 1);
 	assert(fclose(f) >= 0);
+#endif
 }
 
 int valid_pointer(void *p)
