@@ -6,6 +6,7 @@
 #include "padding.h"
 #include "utils.h"
 
+// Implementation of CTR mode
 size_t aes_ctr_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     int num_blocks = input_length / BLOCK_SIZE;
@@ -45,6 +46,7 @@ size_t aes_ctr_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     return (output_length * BLOCK_SIZE) + last_block_size;
 }
 
+// Implementation of OFB mode of operation
 size_t aes_ofb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     int num_blocks = input_length / BLOCK_SIZE;
@@ -115,6 +117,7 @@ size_t aes_cfb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     return (output_length * BLOCK_SIZE) + last_block_size;
 }
 
+// ECB mode of operation
 size_t aes_ecb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     int num_blocks = input_length / BLOCK_SIZE;
@@ -131,6 +134,7 @@ size_t aes_ecb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     return output_length * BLOCK_SIZE;
 }
 
+// CBC mode of operation
 size_t aes_cbc_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     uint8_t iv[BLOCK_SIZE] = {0x00};
@@ -155,6 +159,7 @@ size_t aes_cbc_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     return output_length * BLOCK_SIZE;
 }
 
+// The master encryption method
 size_t encrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int input_length)
 {
     assert(valid_pointer(aes_params) != 0);

@@ -1,5 +1,5 @@
-#ifndef __AES_H
-#define __AES_H
+#ifndef AES_H
+#define AES_H
 #include <stdint.h>
 typedef enum {
     AES_MODE_CBC = 0,

@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "padding.h"
 
+// CTR mode decryption
 size_t aes_ctr_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     uint8_t iv[BLOCK_SIZE] = {0x00};
@@ -47,6 +48,7 @@ size_t aes_ctr_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     return output_length * BLOCK_SIZE + last_block_size;
 }
 
+//OFB decryption
 size_t aes_ofb_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     uint8_t iv[BLOCK_SIZE] = {0x00};
@@ -109,7 +111,7 @@ size_t aes_cfb_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     return (output_length * BLOCK_SIZE)+ last_block_size;
 }
 
-// Returns length of decrypted message
+// ECB decryption - Returns length of decrypted message
 size_t aes_ecb_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     uint8_t block[BLOCK_SIZE] = {0x00};
@@ -126,7 +128,7 @@ size_t aes_ecb_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     return output_length * BLOCK_SIZE;
 }
 
-// Returns length of decrypted message
+// CBC- Decrypt: Returns length of decrypted message
 size_t aes_cbc_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     uint8_t iv[BLOCK_SIZE] = {0x00};
@@ -148,6 +150,7 @@ size_t aes_cbc_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     return output_length * BLOCK_SIZE;
 }
 
+// Decryption driver method
 size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int input_length)
 {
     assert(valid_pointer(aes_params) != 0);
