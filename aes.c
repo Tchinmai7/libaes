@@ -125,6 +125,7 @@ uint8_t get_sbox_value(uint8_t val)
     int b;
     uint8_t ret = sbox[0];
     for (i = 1; i < (BLOCK_SIZE * BLOCK_SIZE); i++) {
+        // we need a function, instead of a simple comparision because the compiler might optimize this
         b = check_equality(i, (size_t)val);
         copy_byte(&ret, &sbox[i], b);
     }

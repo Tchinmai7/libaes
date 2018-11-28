@@ -1,8 +1,10 @@
 #include <stdio.h>
+#include <sys/ioctl.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <linux/random.h>
 #include <fcntl.h>
 #include "utils.h"
 
@@ -32,7 +34,7 @@ void copy_byte(uint8_t *r, const uint8_t *a, uint32_t b)
     *r ^= t;
 }
 
-// We need this because the compiler will optimzie the normal equality checking out
+// We need this because the compiler will optimize the normal equality checking out
 int check_equality(uint32_t a, uint32_t b)
 {
     size_t i; 
@@ -140,6 +142,20 @@ void get_random_bytes(uint8_t* result, size_t size)
     int fd = open("/dev/urandom", O_NOFOLLOW | O_RDONLY | O_CLOEXEC);
     if (fd == -1) {
         printf("Error opening /dev/urandom. Aborting \n");
+        abort();
+    }
+	struct stat st;
+
+    /* Verify that the device node is proper */
+    if (fstat(fd, &st) == -1 || !S_ISCHR(st.st_mode)) {
+        close(fd);
+        printf("/dev/urandom looks fishy. Aborting\n");
+        abort();
+    }
+    int cnt;
+    if (ioctl(fd, RNDGETENTCNT, &cnt) == -1) {
+        close(fd);
+        printf("Entropy not enough, aborting()\n");
         abort();
     }
     size_t bytes_read = read(fd, result, size);
