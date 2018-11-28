@@ -74,25 +74,25 @@ void inv_shift_rows(uint8_t (*in)[WORD_SIZE])
 uint8_t multiply_by_09(uint8_t val)
 {
     //x×9=(((x×2)×2)×2)+x
-    return (multiply_by_two(multiply_by_two(multiply_by_two(val))) ^ val);
+    return (xtime(xtime(xtime(val))) ^ val);
 }
 
 uint8_t multiply_by_0b(uint8_t val)
 {
     //x×11=((((x×2)×2)+x)×2)+x
-    return (multiply_by_two(multiply_by_two(multiply_by_two(val)) ^ val) ^ val);
+    return (xtime(xtime(xtime(val)) ^ val) ^ val);
 }
 
 uint8_t multiply_by_0d(uint8_t val)
 {
     //x×13=((((x×2)+x)×2)×2)+x
-    return (multiply_by_two(multiply_by_two(multiply_by_two(val) ^ val)) ^ val);
+    return (xtime(xtime(xtime(val) ^ val)) ^ val);
 }
 
 uint8_t multiply_by_0e(uint8_t val)
 {
     //x×14=((((x×2)+x)×2)+x)×2
-    return multiply_by_two((multiply_by_two(multiply_by_two(val) ^ val) ^ val));
+    return xtime((xtime(xtime(val) ^ val) ^ val));
 }
 
 void inv_mix_columns(uint8_t (*in)[WORD_SIZE])

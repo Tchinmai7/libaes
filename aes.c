@@ -159,7 +159,7 @@ uint8_t getRcon(int idx)
     uint8_t rc[11] = {0x01};
     for (int r = 1; r <= idx;  r++) 
     {
-        rc[r] = multiply_by_two(rc[r-1]);
+        rc[r] = xtime(rc[r-1]);
     }
     return rc[idx];
 }
@@ -252,10 +252,10 @@ void mix_columns(uint8_t (*in)[WORD_SIZE])
         old_col[1] = in[1][i];
         old_col[2] = in[2][i];
         old_col[3] = in[3][i];
-        in[0][i] = (multiply_by_two(old_col[0])) ^ (multiply_by_two(old_col[1]) ^ old_col[1]) ^ old_col[2] ^ old_col[3];
-        in[1][i] = old_col[0] ^ multiply_by_two(old_col[1]) ^ (multiply_by_two(old_col[2]) ^ old_col[2]) ^ old_col[3];
-        in[2][i] = old_col[0] ^ old_col[1] ^ multiply_by_two(old_col[2]) ^ (multiply_by_two(old_col[3]) ^ old_col[3]);
-        in[3][i] = (multiply_by_two(old_col[0]) ^ old_col[0]) ^ old_col[1] ^ old_col[2] ^ multiply_by_two(old_col[3]);
+        in[0][i] = (xtime(old_col[0])) ^ (xtime(old_col[1]) ^ old_col[1]) ^ old_col[2] ^ old_col[3];
+        in[1][i] = old_col[0] ^ xtime(old_col[1]) ^ (xtime(old_col[2]) ^ old_col[2]) ^ old_col[3];
+        in[2][i] = old_col[0] ^ old_col[1] ^ xtime(old_col[2]) ^ (xtime(old_col[3]) ^ old_col[3]);
+        in[3][i] = (xtime(old_col[0]) ^ old_col[0]) ^ old_col[1] ^ old_col[2] ^ xtime(old_col[3]);
     }
 }
 

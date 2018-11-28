@@ -111,7 +111,7 @@ void convert_to_array(uint8_t(*in)[WORD_SIZE], uint8_t* out)
     }   
 }
 
-uint8_t multiply_by_two(uint8_t val)
+uint8_t xtime(uint8_t val)
 {
   return ((val << 1) ^ (((val >> 7) & 1) * 0x1b));
 }
