@@ -80,6 +80,41 @@ size_t aes_ofb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     return (output_length * BLOCK_SIZE) + last_block_size;
 }
 
+// This implements CFB with 128 bit segments
+size_t aes_cfb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
+{
+    uint8_t iv[BLOCK_SIZE] = {0x00};
+    get_random_bytes(iv, BLOCK_SIZE);
+    int num_blocks = input_length / BLOCK_SIZE;
+    int last_block_size = input_length % BLOCK_SIZE;
+    uint8_t block[BLOCK_SIZE] = {0x00};
+    uint8_t temp_op[BLOCK_SIZE] = {0x00};
+
+    // IV is in the first 16 bytes of the cipher text
+    memcpy(*output, iv, BLOCK_SIZE);
+    //to account for the IV that's appended.
+    size_t output_length = 1;
+    for (int i = 0; i < num_blocks; i++) {
+        // First encrypt the IV
+        cipher(iv, temp_op, expanded_key, Nk);
+        // Then Xor with plain text
+        // Use the result as the IV for next
+        memcpy(block, input + (i * BLOCK_SIZE), BLOCK_SIZE);
+        Xor(temp_op, block, BLOCK_SIZE);
+        memcpy(*output + (i * BLOCK_SIZE) + BLOCK_SIZE, temp_op, BLOCK_SIZE);
+        memcpy(iv, temp_op, BLOCK_SIZE);
+        output_length ++;
+    }
+    // Handle the last incomplete block here
+    cipher(iv, temp_op, expanded_key, Nk);
+    // Then Xor with `last_block_size` bytes of plain text
+    memcpy(block, input + (num_blocks * BLOCK_SIZE), last_block_size);
+    Xor(temp_op, block, last_block_size);
+    memcpy(*output + (num_blocks * BLOCK_SIZE) + BLOCK_SIZE, temp_op, last_block_size);
+    
+    return (output_length * BLOCK_SIZE) + last_block_size;
+}
+
 size_t aes_ecb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     int num_blocks = input_length / BLOCK_SIZE;
