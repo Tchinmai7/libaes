@@ -97,7 +97,7 @@ aes_params_t* init_aes_params()
         exit(-1);
     }
 	param->key_size = AES_128_BIT;
-	param->aes_mode = AES_MODE_CBC;
+	param->aes_mode = AES_MODE_CTR;
 	param->Nk = AES_128_BIT/WORD_SIZE;
 	param->key = NULL;
     param->key_area = NULL;

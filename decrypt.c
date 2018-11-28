@@ -81,34 +81,6 @@ size_t aes_ofb_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
 }
 
 
-size_t aes_cfb_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
-{
-    uint8_t iv[BLOCK_SIZE] = {0x00};
-    // IV is in the first 16 bytes of the cipher text
-    memcpy(iv, input, BLOCK_SIZE);
-    int block_size = (input_length / BLOCK_SIZE);
-    int last_block_size = input_length % BLOCK_SIZE;
-    uint8_t temp_op[BLOCK_SIZE] = {0x00};
-    uint8_t block[BLOCK_SIZE] = {0x00};
-    size_t output_length = 0;
-    // The first block is the IV
-    for (int i = 1; i < block_size; i++) {
-        // encrypt the IV
-        cipher(iv, temp_op, expanded_key, Nk);
-        memcpy(block, input + (i * BLOCK_SIZE), BLOCK_SIZE);
-        Xor(temp_op, block, BLOCK_SIZE);
-        memcpy(*output + ((i - 1) * BLOCK_SIZE), temp_op, BLOCK_SIZE);
-        memcpy(iv, block, BLOCK_SIZE);
-        output_length++;
-    }
-    // Handle the last incomplete block here. 
-    cipher(iv, temp_op, expanded_key, Nk);
-    memcpy(block, input + (block_size * BLOCK_SIZE), last_block_size);
-    Xor(temp_op, block, last_block_size);
-    memcpy(*output + ((block_size - 1) * BLOCK_SIZE), temp_op, last_block_size);
-    return (output_length * BLOCK_SIZE)+ last_block_size;
-}
-
 // Returns length of decrypted message
 size_t aes_ecb_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
@@ -201,16 +173,6 @@ size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int i
                 exit(-1);
             }
             output_length = aes_ofb_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
-            break;
-        case AES_MODE_CFB:
-            strip_padding_bytes = false;
-            // add one byte for null character
-            *output = calloc(input_length - BLOCK_SIZE + 1, 1);
-            if (NULL == output) {
-                printf("FATAL ERROR: Calloc failure\n");
-                exit(-1);
-            }
-            output_length = aes_cfb_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         default:
             break;
