@@ -22,7 +22,7 @@ void test_encryption(aes_key_size_t key_size, uint8_t Nk, uint8_t* input, size_t
     print_word(params->key, Nk * 4); 
     printf("Bytes Plain: \t");
     print_word(input, input_size);
-    printf("STR: Input: %s\n", input);
+    printf("Input: \t%s\n", input);
     
     uint8_t* output = NULL; 
     size_t enc_len = encrypt(params, input, &output, input_size);
@@ -52,7 +52,6 @@ int main(int argc, char* argv[])
     size_t input_size = strlen(argv[1]);
     
     uint8_t* input = NULL;
-    printf("Input size is %ld\n", input_size);
     input = calloc(input_size + 1, 1);
     if (input == NULL) {
         printf("fatal error, Calloc failure");
