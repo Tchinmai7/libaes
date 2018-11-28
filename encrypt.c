@@ -80,6 +80,7 @@ size_t aes_ofb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     return (output_length * BLOCK_SIZE) + last_block_size;
 }
 
+// This implements CFB with 128 bit segments
 size_t aes_cfb_mode_encrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     uint8_t iv[BLOCK_SIZE] = {0x00};
