@@ -26,7 +26,7 @@ void test_encryption(aes_key_size_t key_size, uint8_t Nk, uint8_t* input, size_t
     
     uint8_t* output = NULL; 
     size_t enc_len = encrypt(params, input, &output, input_size);
-    printf("Encrypted bytes: \t");
+    printf("Encrypted Bytes: \t");
     print_word(output, enc_len);
 
     uint8_t* plain = NULL;
@@ -35,7 +35,7 @@ void test_encryption(aes_key_size_t key_size, uint8_t Nk, uint8_t* input, size_t
     plain[dec_len] = '\0';
     printf("Decrypted bytes: \t");
     print_word(plain, dec_len);
-    printf("decrypted_string %s\n", plain);
+    printf("Decrypted String: \t%s\n", plain);
     free(output);
     free(plain);
     free_aes_params(params);
