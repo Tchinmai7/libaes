@@ -190,6 +190,15 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int i
             }
             output_length = aes_ecb_mode_encrypt(padded_input, output, aes_params->Nk, expanded_key, padded_input_length);
             break;
+        case AES_MODE_CFB:
+            padded_input_length = add_padding(input, &padded_input, input_length);
+            *output = calloc(padded_input_length + BLOCK_SIZE, 1);
+            if (NULL == output) {
+                printf("FATAL ERROR: Calloc failure\n");
+                exit(-1);
+            }
+            output_length = aes_cfb_mode_encrypt(padded_input, output, aes_params->Nk, expanded_key, padded_input_length);
+            break;
         case AES_MODE_CTR:
             // AES with CTR mode needs no padding.
             *output = calloc(input_length + BLOCK_SIZE, 1);
@@ -207,15 +216,6 @@ size_t encrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int i
                 exit(-1);
             }
             output_length = aes_ofb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
-            break;
-        case AES_MODE_CFB:
-            // AES with CFB mode needs no padding.
-            *output = calloc(input_length + BLOCK_SIZE, 1);
-            if (NULL == output) {
-                printf("FATAL ERROR: Calloc failure\n");
-                exit(-1);
-            }
-            output_length = aes_cfb_mode_encrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         default:
             break;

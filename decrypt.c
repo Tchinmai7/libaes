@@ -80,7 +80,7 @@ size_t aes_ofb_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_
     return (output_length * BLOCK_SIZE)+ last_block_size;
 }
 
-
+// Uses CFB in 128 bit mode
 size_t aes_cfb_mode_decrypt(uint8_t* input, uint8_t** output, uint8_t Nk, uint8_t* expanded_key, int input_length) 
 {
     uint8_t iv[BLOCK_SIZE] = {0x00};
@@ -182,6 +182,15 @@ size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int i
             }
             output_length = aes_ecb_mode_decrypt(input, &padded_op, aes_params->Nk, expanded_key, input_length);
             break;
+        case AES_MODE_CFB:
+            strip_padding_bytes = true;
+            padded_op = calloc(input_length + 1, 1);
+            if (NULL == padded_op) {
+                printf("FATAL ERROR: Calloc failure\n");
+                exit(-1);
+            }
+            output_length = aes_cfb_mode_decrypt(input, &padded_op, aes_params->Nk, expanded_key, input_length);
+            break;
         case AES_MODE_CTR:
             strip_padding_bytes = false;
             // add one byte for null character
@@ -201,16 +210,6 @@ size_t decrypt(aes_params_t* aes_params, uint8_t* input, uint8_t** output, int i
                 exit(-1);
             }
             output_length = aes_ofb_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
-            break;
-        case AES_MODE_CFB:
-            strip_padding_bytes = false;
-            // add one byte for null character
-            *output = calloc(input_length - BLOCK_SIZE + 1, 1);
-            if (NULL == output) {
-                printf("FATAL ERROR: Calloc failure\n");
-                exit(-1);
-            }
-            output_length = aes_cfb_mode_decrypt(input, output, aes_params->Nk, expanded_key, input_length);
             break;
         default:
             break;
