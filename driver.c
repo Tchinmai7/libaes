@@ -18,7 +18,7 @@ void test_encryption(aes_key_size_t key_size, uint8_t Nk, uint8_t* input, size_t
         return;
     } 
     set_aes_key(params, key_size); 
-    printf("The key used is\n");
+    printf("The key used is\t");
     print_word(params->key, Nk * 4); 
     printf("Bytes Plain: \t");
     print_word(input, input_size);
@@ -60,10 +60,11 @@ int main(int argc, char* argv[])
 
     memcpy(input, argv[1], input_size);
     input[input_size] = '\0';
+    printf("128 - Bit AES\n");
     test_encryption(AES_128_BIT, 4, input, input_size); 
-    printf("192 Bit AES - \n");
+    printf("192 - Bit AES\n");
     test_encryption(AES_192_BIT, 6, input, input_size); 
-    printf("256 Bit AES - \n");
+    printf("256 - Bit AES - \n");
     test_encryption(AES_256_BIT, 8, input, input_size); 
     free(input);
     return 0;
