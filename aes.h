@@ -6,6 +6,7 @@ typedef enum {
     AES_MODE_ECB = 1,
     AES_MODE_CTR = 2,
     AES_MODE_OFB = 3,
+    AES_MODE_CFB = 4,
 } aes_modes_t;
 
 typedef enum {
