@@ -31,12 +31,18 @@ for result_dict in result_dicts:
     decrypted_text = result_dict["decrypted"]
     decrypted_string = result_dict["decrypted_string"]
     actual_string_in_hex = ''.join(hex(ord(c))[2:] for c in actual_input)
+    error_flag = False
+    print(f"\n Verifying for input \'{actual_input}\'\n")
     for plain_text_byte in plain_text_bytes:
         if (actual_string_in_hex != plain_text_byte):
             print(f"ERROR: The input byte string doesn't match for {actual_input}: got:{plain_text_byte}, expected:{actual_string_in_hex}")
+            error_flag = True
     for string in decrypted_string:
         if (actual_input != string):
             print(f"ERROR: The decrypted string doesn't match. Expected: {actual_input}, got: {string}")
+            error_flag = True
     for encryption_method, key, ciphertext, decrypt_string in zip(encryption_methods, keys, ciphertexts, decrypted_string):
-        print(f"{encryption_method} bit encryption - Key: {key}, encrypt(\'{actual_input}\') is {ciphertext}\n decrypt({ciphertext}) is (\'{decrypt_string}\')")
-
+        print(f"{encryption_method} bit encryption - Key: {key}, encrypt(\'{actual_input}\') is \'{ciphertext}\'\n decrypt(\'{ciphertext}\') is (\'{decrypt_string}\')")
+    if not error_flag:
+        print("\nSUCCESS\n")
+    print("\n")
