@@ -33,13 +33,13 @@ void copy_byte(uint8_t *r, const uint8_t *a, uint32_t b)
 }
 
 // We need this because the compiler will optimzie the normal equality checking out
-int check_equality(uint8_t a, uint8_t b)
+int check_equality(uint32_t a, uint32_t b)
 {
-    uint8_t i; 
+    size_t i; 
     uint32_t r = 0;
-    uint8_t *ta = (uint8_t *) &a;
-    uint8_t *tb = (uint8_t *) &b;
-    for(i = 0;i < sizeof(uint8_t); i++)
+    unsigned char *ta = (unsigned char *)&a;
+    unsigned char *tb = (unsigned char *)&b;
+    for(i=0;i<sizeof(uint32_t);i++)
     {
         r |= (ta[i] ^ tb[i]);
     }

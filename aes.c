@@ -97,7 +97,7 @@ aes_params_t* init_aes_params()
         exit(-1);
     }
 	param->key_size = AES_128_BIT;
-	param->aes_mode = AES_MODE_CTR;
+	param->aes_mode = AES_MODE_CBC;
 	param->Nk = AES_128_BIT/WORD_SIZE;
 	param->key = NULL;
     param->key_area = NULL;
@@ -121,11 +121,11 @@ void set_aes_mode(aes_params_t* param, aes_modes_t mode)
 #define Nb 4
 uint8_t get_sbox_value(uint8_t val) 
 {
-    uint8_t i;
+    size_t i;
     int b;
     uint8_t ret = sbox[0];
-    for (i = 0; i < 255; i++) {
-        b = check_equality(i, val);
+    for (i = 1; i < (BLOCK_SIZE * BLOCK_SIZE); i++) {
+        b = check_equality(i, (size_t)val);
         copy_byte(&ret, &sbox[i], b);
     }
     return ret;

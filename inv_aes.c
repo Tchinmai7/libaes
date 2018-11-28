@@ -24,11 +24,11 @@ uint8_t inv_sbox[BLOCK_SIZE * BLOCK_SIZE] = {
 
 uint8_t get_inv_sbox_value(uint8_t val) 
 {
-    uint8_t i;
+    size_t i;
     int b;
     uint8_t ret = inv_sbox[0];
-    for (i = 0; i < 255; i++) {
-        b = check_equality(i, val);
+    for (i = 1; i < (BLOCK_SIZE * BLOCK_SIZE); i++) {
+        b = check_equality(i, (size_t)val);
         copy_byte(&ret, &inv_sbox[i], b);
     }
     return ret;
