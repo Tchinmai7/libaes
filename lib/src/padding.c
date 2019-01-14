@@ -22,7 +22,7 @@ size_t add_padding(uint8_t* messagebuf, uint8_t **output_buf, int input_msglen)
         exit(-1);
     }
     memcpy(*output_buf, messagebuf, input_msglen);
-    memset(*output_buf + input_msglen, bytestopad, BLOCK_SIZE);
+    memset(*output_buf + input_msglen, bytestopad, bytestopad);
     return input_msglen + bytestopad;
 }
 
