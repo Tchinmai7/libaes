@@ -4,10 +4,8 @@
 #include <string.h>
 #include <sys/resource.h>
 #include <sys/mman.h>
-#include "encrypt.h"
-#include "decrypt.h"
 #include "aes.h"
-#include "inv_aes.h"
+#include "lib_aes.h"
 #include "utils.h"
 
 void test_encryption(aes_key_size_t key_size, uint8_t Nk, uint8_t* input, size_t input_size)
