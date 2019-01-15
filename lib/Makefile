@@ -10,11 +10,11 @@ HEADERS_DIR=$(addprefix includes/, $(HEADERS))
 src/%.o: %.c $(HEADERS)
 	$(CC) -g -c -o $@ $< $(CFLAGS)
 
-lib_aes.a: $(SOURCES_DIR) 
+bin/libaes.a: $(SOURCES_DIR) 
 	ar rcs $@ $^
 
 .PHONY: clean 
 
 clean:
-	rm -f lib_aes.a 
+	rm -f bin/libaes.a 
 	rm -f src/*.o   

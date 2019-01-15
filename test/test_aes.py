@@ -7,7 +7,7 @@ result_dicts = []
 for line in lines:
     result = {"actual_input":[],  "encryption": [], "keys": [], "ciphertext": [], "plaintext": [], "decrypted": [], "decrypted_string": []}
     result["actual_input"].append(line.strip())
-    output = subprocess.run(['./aes_sample', line.strip()], stdout=subprocess.PIPE).stdout.decode('utf-8')
+    output = subprocess.run(['./test_aes', line.strip()], stdout=subprocess.PIPE).stdout.decode('utf-8')
     for s in output.split("\n"):
         if "The key used is" in s:
             result["keys"].append(s.split("The key used is\t")[1])

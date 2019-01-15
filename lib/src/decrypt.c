@@ -2,8 +2,8 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
-#include "inv_aes.h"
-#include "decrypt.h"
+#include "aes.h"
+#include "lib_aes.h"
 #include "utils.h"
 #include "padding.h"
 

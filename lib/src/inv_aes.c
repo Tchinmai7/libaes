@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include "inv_aes.h"
 #include "aes.h"
 #include "utils.h"
 // Inverse Rijndael SBOX 

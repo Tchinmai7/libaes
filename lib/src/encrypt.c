@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include "encrypt.h"
+#include "lib_aes.h"
 #include "padding.h"
 #include "utils.h"
 
